@@ -12,7 +12,7 @@ const CharacterDatabase = {
             subtitle: 'Sombra de Espinas I',
             image: 'assets/ui/character-base.jpg',
             description: 'Inicio (forma base)',
-            fullDescription: 'Cultivador de las sombras antiguas. El primer nivel de poder.',
+            fullDescription: 'Sombra de Espinas I',
             attributes: {
                 ps: 4677,
                 atq: 702,
