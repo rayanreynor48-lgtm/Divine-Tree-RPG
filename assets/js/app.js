@@ -1,11 +1,25 @@
 /* ===================================
-   DIVINE TREE RPG v4 - SISTEMA COMPLETO
+   DIVINE TREE RPG v7 - SISTEMA COMPLETO
    =================================== */
 
 // ===== BASE DE DATOS DE PERSONAJES =====
 
 const CharacterDatabase = {
     characters: [
+        {
+            id: 'alma-naciente-reaper',
+            name: '死神の化身',
+            subtitle: 'Alma Naciente I',
+            image: 'assets/ui/reaper-main.jpg',
+            description: 'Encarnación del Reaper',
+            fullDescription: 'Reaper - El Alma Naciente I. Portador del poder oscuro supremo. La comprensión es la raíz del poder.',
+            attributes: {
+                ps: 27607,
+                atq: 4071,
+                def: 676,
+                agl: 973
+            }
+        },
         {
             id: 'sombra-espinas-1',
             name: '茨ノ影 I',
@@ -32,20 +46,6 @@ const CharacterDatabase = {
                 atq: 850,
                 def: 250,
                 agl: 380
-            }
-        },
-        {
-            id: 'erudito-vacio',
-            name: 'Erudito del Vacío',
-            subtitle: 'Dominio del Dao',
-            image: 'assets/ui/character-base.jpg',
-            description: 'Forma Ascendida II',
-            fullDescription: 'Dominador del vacío eterno. Velocidad y sabiduría supremas.',
-            attributes: {
-                ps: 5100,
-                atq: 620,
-                def: 180,
-                agl: 720
             }
         }
     ],
