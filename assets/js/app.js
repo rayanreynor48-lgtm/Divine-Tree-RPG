@@ -4,7 +4,7 @@ const characters = [
         id: 1,
         name: '茓ノ影 I',
         title: 'Sombra de Espinas I',
-        emoji: '🖤',
+        image: 'assets/ui/character-base.jpg',
         stats: {
             ps: 4677,
             atq: 702,
@@ -85,8 +85,15 @@ function updateCharacterCard() {
     const char = characters[currentCharacter];
     const card = document.getElementById('characterCard');
     
+    let imageContent = '';
+    if (char.image) {
+        imageContent = `<img src="${char.image}" alt="${char.name}">`;
+    } else {
+        imageContent = char.emoji;
+    }
+    
     card.innerHTML = `
-        <div class="character-image">${char.emoji}</div>
+        <div class="character-image">${imageContent}</div>
         <div class="character-name">${char.name}</div>
         <div class="character-desc">${char.title}</div>
     `;
@@ -115,7 +122,14 @@ function nextCharacter() {
 // Details screen
 function updateDetailsScreen() {
     const char = characters[currentCharacter];
-    document.getElementById('detailsImage').textContent = char.emoji;
+    const detailsImage = document.getElementById('detailsImage');
+    
+    if (char.image) {
+        detailsImage.innerHTML = `<img src="${char.image}" alt="${char.name}">`;
+    } else {
+        detailsImage.textContent = char.emoji;
+    }
+    
     document.getElementById('detailsName').textContent = char.name;
     document.getElementById('detailsSubtitle').textContent = char.title;
 }
