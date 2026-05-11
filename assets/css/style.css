@@ -1058,10 +1058,27 @@ body {
 @media (max-width: 1200px) {
     .game-layout {
         grid-template-columns: 1fr;
+        height: auto;
+        flex-direction: column;
+    }
+    
+    .game-panel {
+        max-height: 50vh;
     }
 }
 
 @media (max-width: 768px) {
+    .game-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+        overflow-y: auto;
+    }
+    
+    .game-panel {
+        max-height: none;
+        min-height: 45vh;
+    }
+    
     .carousel-container {
         gap: var(--spacing-sm);
     }
