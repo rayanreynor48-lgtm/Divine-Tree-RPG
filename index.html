@@ -2,296 +2,70 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="Divine Tree RPG - Idle Fantasy Oriental Cultivation Game">
-    <meta name="theme-color" content="#0a1428">
-    <title>Divine Tree RPG</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divine Tree RPG - Path of Cultivation</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-    <!-- CONTENEDOR PRINCIPAL DEL JUEGO -->
-    <div id="app" class="app-container">
-        <!-- PANTALLA DE INICIO -->
-        <div id="splashScreen" class="screen screen-splash active">
-            <div class="splash-background">
-                <img src="assets/backgrounds/bg-main.png" alt="Background" class="bg-image">
-                <div class="bg-overlay"></div>
-                <div class="bg-mystical"></div>
+    <div class="container">
+        <!-- HOME SCREEN -->
+        <div class="screen home-screen active">
+            <h1 class="title">Divine Tree RPG</h1>
+            <p class="subtitle">Path of Cultivation</p>
+            <button class="btn" onclick="goToCharacterSelect()">ENTRAR</button>
+        </div>
+
+        <!-- CHARACTER SELECTION SCREEN -->
+        <div class="screen character-screen">
+            <div style="width: 100%; text-align: center;">
+                <h2 class="character-title">Elige tu Cultivador</h2>
+                <p class="character-subtitle">Cada uno posee poderes únicos</p>
             </div>
-            <div class="splash-particles">
-                <div class="particle"></div>
-                <div class="particle"></div>
-                <div class="particle"></div>
-                <div class="particle"></div>
+
+            <div class="character-carousel">
+                <button class="carousel-btn" onclick="prevCharacter()" id="prevBtn">←</button>
+                <div class="character-card" id="characterCard"></div>
+                <button class="carousel-btn" onclick="nextCharacter()" id="nextBtn">→</button>
             </div>
-            <div class="splash-content">
-                <h1 class="splash-title">Divine Tree RPG</h1>
-                <p class="splash-subtitle">Path of Cultivation</p>
-                <button id="enterBtn" class="btn btn-primary">ENTRAR</button>
+
+            <div style="width: 100%; text-align: center;">
+                <p class="counter" id="counter"></p>
+                <button class="btn" onclick="goToDetails()">VER DETALLES</button>
             </div>
         </div>
 
-        <!-- PANTALLA DE SELECCIÓN DE PERSONAJES -->
-        <div id="characterSelectScreen" class="screen screen-character-select">
-            <div class="char-select-background">
-                <img src="assets/backgrounds/bg-main.png" alt="Background" class="bg-image">
-                <div class="bg-overlay"></div>
-            </div>
-            <div class="char-select-content">
-                <h2 class="char-select-title">Elige tu Cultivador</h2>
-                <p class="char-select-subtitle">Cada uno posee poderes únicos</p>
-                
-                <div class="carousel-container">
-                    <button class="carousel-btn carousel-prev" id="prevBtn">←</button>
-                    
-                    <div class="carousel-wrapper">
-                        <div class="characters-carousel" id="charactersCarousel">
-                            <!-- Personajes generados dinámicamente -->
-                        </div>
-                    </div>
-                    
-                    <button class="carousel-btn carousel-next" id="nextBtn">→</button>
+        <!-- CHARACTER DETAILS SCREEN -->
+        <div class="screen details-screen">
+            <div class="details-card">
+                <div class="details-image-container">
+                    <div class="details-image" id="detailsImage"></div>
                 </div>
-                
-                <div class="carousel-counter">
-                    <span id="carouselCounter">1 / 3</span>
+                <h2 class="details-name" id="detailsName"></h2>
+                <p class="details-subtitle" id="detailsSubtitle"></p>
+
+                <div class="base-form">Inicio (forma base)</div>
+
+                <div class="stats-container" id="statsContainer"></div>
+
+                <div class="buttons-group">
+                    <button class="btn btn-secondary" onclick="goToCharacterSelect()">← ATRÁS</button>
+                    <button class="btn btn-tertiary" onclick="startCultivation()">USAR →</button>
                 </div>
             </div>
         </div>
 
-        <!-- PANTALLA DE PREVIEW DE PERSONAJE -->
-        <div id="characterPreviewScreen" class="screen screen-character-preview">
-            <div class="preview-background">
-                <img src="assets/backgrounds/bg-main.png" alt="Background" class="bg-image">
-                <div class="bg-overlay"></div>
+        <!-- CULTIVATION SCREEN -->
+        <div class="screen cultivation-screen">
+            <div class="progress-container">
+                <div class="cultivation-bar">
+                    <div class="cultivation-fill" id="cultivationFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">0%</div>
             </div>
-            <div class="preview-content">
-                <div class="preview-character">
-                    <div class="character-circle" id="previewCharImage">
-                        <img src="" alt="Character" id="previewImg">
-                    </div>
-                </div>
-                
-                <div class="preview-stats">
-                    <h2 id="previewCharName" class="preview-title">Cultivador</h2>
-                    <p class="preview-form">Forma Base</p>
-                    
-                    <div class="preview-attributes">
-                        <div class="attribute-item">
-                            <span class="attr-label">PS</span>
-                            <div class="attr-bar">
-                                <div class="attr-fill" id="previewPs" style="width: 50%"></div>
-                            </div>
-                            <span class="attr-value" id="previewPsVal">0</span>
-                        </div>
-                        
-                        <div class="attribute-item">
-                            <span class="attr-label">Atq</span>
-                            <div class="attr-bar">
-                                <div class="attr-fill" id="previewAtq" style="width: 50%"></div>
-                            </div>
-                            <span class="attr-value" id="previewAtqVal">0</span>
-                        </div>
-                        
-                        <div class="attribute-item">
-                            <span class="attr-label">Def</span>
-                            <div class="attr-bar">
-                                <div class="attr-fill" id="previewDef" style="width: 50%"></div>
-                            </div>
-                            <span class="attr-value" id="previewDefVal">0</span>
-                        </div>
-                        
-                        <div class="attribute-item">
-                            <span class="attr-label">Agl</span>
-                            <div class="attr-bar">
-                                <div class="attr-fill" id="previewAgl" style="width: 50%"></div>
-                            </div>
-                            <span class="attr-value" id="previewAglVal">0</span>
-                        </div>
-                    </div>
-                    
-                    <p class="preview-description" id="previewDescription">Descripción del cultivador</p>
-                </div>
-                
-                <div class="preview-buttons">
-                    <button class="btn btn-secondary" id="backBtn">← ATRÁS</button>
-                    <button class="btn btn-primary" id="selectBtn">USAR →</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- PANTALLA DE CARGA -->
-        <div id="loadingScreen" class="screen screen-loading">
-            <div class="loading-background">
-                <div class="bg-mystical"></div>
-            </div>
-            <div class="particles-container">
-                <div class="particle"></div>
-                <div class="particle"></div>
-                <div class="particle"></div>
-                <div class="particle"></div>
-                <div class="particle"></div>
-                <div class="particle"></div>
-                <div class="particle"></div>
-                <div class="particle"></div>
-            </div>
-            <div class="loading-content">
-                <div class="loading-bar-section">
-                    <div class="progress-bar-container">
-                        <div class="progress-bar">
-                            <div class="progress-fill"></div>
-                            <div class="progress-shimmer"></div>
-                        </div>
-                        <span class="progress-text">0%</span>
-                    </div>
-                    <div class="tips-container">
-                        <p class="tips-text"></p>
-                    </div>
-                </div>
-            </div>
-            <div class="loading-glow"></div>
-        </div>
-
-        <!-- PANTALLA PRINCIPAL DEL JUEGO -->
-        <div id="mainGameScreen" class="screen screen-main-game">
-            <div class="game-background">
-                <div class="bg-mystical"></div>
-            </div>
-
-            <div class="game-layout">
-                <!-- PANEL IZQUIERDO - PERSONAJE -->
-                <div class="game-panel panel-character">
-                    <div class="panel-header">
-                        <h3 class="panel-title">Cultivador</h3>
-                        <button class="panel-toggle" data-target="character-details">−</button>
-                    </div>
-                    <div class="panel-body" id="character-details">
-                        <!-- Portrait del personaje -->
-                        <div class="character-portrait">
-                            <img src="assets/ui/character-base.jpg" alt="Character">
-                        </div>
-                        <!-- Stats -->
-                        <div class="character-stats">
-                            <div class="stat-row">
-                                <span class="stat-label">Nivel</span>
-                                <span class="stat-value" id="playerLevel">1</span>
-                            </div>
-                            <div class="stat-row">
-                                <span class="stat-label">EXP</span>
-                                <span class="stat-value" id="playerExp">0/100</span>
-                            </div>
-                            <div class="stat-row">
-                                <span class="stat-label">Evolución</span>
-                                <span class="stat-value" id="playerEvolution">Base</span>
-                            </div>
-                        </div>
-                        <!-- Barra de EXP -->
-                        <div class="exp-bar">
-                            <div class="exp-fill" id="expFill" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PANEL CENTRAL - FORMACIÓN ESPIRITUAL (EQUIPO) -->
-                <div class="game-panel panel-equipment">
-                    <div class="panel-header">
-                        <h3 class="panel-title">Formación Espiritual</h3>
-                        <button class="panel-toggle" data-target="equipment-grid">−</button>
-                    </div>
-                    <div class="panel-body" id="equipment-grid">
-                        <div class="equipment-grid">
-                            <!-- Fila 1 -->
-                            <div class="equipment-slot" data-slot="weapon">
-                                <div class="slot-label">Arma</div>
-                                <div class="slot-item"></div>
-                            </div>
-                            <div class="equipment-slot" data-slot="helmet">
-                                <div class="slot-label">Casco</div>
-                                <div class="slot-item"></div>
-                            </div>
-                            <div class="equipment-slot" data-slot="armor">
-                                <div class="slot-label">Armadura</div>
-                                <div class="slot-item"></div>
-                            </div>
-                            <div class="equipment-slot" data-slot="boots">
-                                <div class="slot-label">Botas</div>
-                                <div class="slot-item"></div>
-                            </div>
-                            <!-- Fila 2 -->
-                            <div class="equipment-slot" data-slot="belt">
-                                <div class="slot-label">Cinto</div>
-                                <div class="slot-item"></div>
-                            </div>
-                            <div class="equipment-slot" data-slot="bracers">
-                                <div class="slot-label">Muñequera</div>
-                                <div class="slot-item"></div>
-                            </div>
-                            <div class="equipment-slot" data-slot="orb">
-                                <div class="slot-label">Orbe</div>
-                                <div class="slot-item"></div>
-                            </div>
-                            <div class="equipment-slot" data-slot="amulet">
-                                <div class="slot-label">Collar</div>
-                                <div class="slot-item"></div>
-                            </div>
-                            <!-- Fila 3 -->
-                            <div class="equipment-slot" data-slot="token">
-                                <div class="slot-label">Token</div>
-                                <div class="slot-item"></div>
-                            </div>
-                            <div class="equipment-slot" data-slot="follower">
-                                <div class="slot-label">Secuaz</div>
-                                <div class="slot-item"></div>
-                            </div>
-                            <div class="equipment-slot" data-slot="artifact">
-                                <div class="slot-label">Artefacto</div>
-                                <div class="slot-item"></div>
-                            </div>
-                            <div class="equipment-slot" data-slot="relic">
-                                <div class="slot-label">Reliquia</div>
-                                <div class="slot-item"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PANEL DERECHO - BESTIAS -->
-                <div class="game-panel panel-beasts">
-                    <div class="panel-header">
-                        <h3 class="panel-title">Bestias Espirituales</h3>
-                        <button class="panel-toggle" data-target="beasts-list">−</button>
-                    </div>
-                    <div class="panel-body" id="beasts-list">
-                        <div class="beasts-container">
-                            <p class="empty-message" id="beastsEmpty">Se desbloquea en nivel 10</p>
-                            <div class="beasts-grid" id="beastsGrid" style="display: none;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- BARRA DE RECURSOS INFERIOR -->
-            <div class="game-resources-bar">
-                <div class="resource-item">
-                    <span class="resource-icon">⭐</span>
-                    <span class="resource-label">Oro</span>
-                    <span class="resource-value" id="goldAmount">0</span>
-                </div>
-                <div class="resource-item">
-                    <span class="resource-icon">✨</span>
-                    <span class="resource-label">Espíritu</span>
-                    <span class="resource-value" id="spiritAmount">0</span>
-                </div>
-                <div class="resource-item">
-                    <span class="resource-icon">🌙</span>
-                    <span class="resource-label">Cultivo</span>
-                    <span class="resource-value" id="cultivationAmount">0</span>
-                </div>
-            </div>
+            <p class="cultivation-quote" id="quote">La paciencia es la virtud del cultivo.</p>
         </div>
     </div>
 
-    <!-- SCRIPTS -->
     <script src="assets/js/app.js"></script>
 </body>
 </html>
