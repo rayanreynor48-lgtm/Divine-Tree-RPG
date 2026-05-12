@@ -1,6 +1,5 @@
-// Device detection and background management for character selection
+// Device detection and background management
 function detectDeviceAspect() {
-    const aspectRatio = window.innerWidth / window.innerHeight;
     const isLandscape = window.innerWidth > window.innerHeight;
     const isMobile = window.innerWidth < 800;
     
@@ -15,10 +14,7 @@ function detectDeviceAspect() {
         bgImage = 'assets/backgrounds/bg-main.png';
     }
     
-    const charScreen = document.querySelector('.character-screen');
-    if (charScreen) {
-        charScreen.style.backgroundImage = `url('${bgImage}')`;
-    }
+    document.documentElement.style.setProperty('--bg-image', `url('${bgImage}')`);
 }
 
 // Initialize device detection
