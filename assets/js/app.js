@@ -1,27 +1,3 @@
-// Device detection and background management
-function detectDeviceAspect() {
-    const isLandscape = window.innerWidth > window.innerHeight;
-    const isMobile = window.innerWidth < 800;
-    
-    let bgImage;
-    if (isLandscape && !isMobile) {
-        // Desktop 16:9
-        bgImage = 'assets/backgrounds/Fondo de pantalla 16-9.png';
-    } else if (!isLandscape || isMobile) {
-        // Mobile 9:16
-        bgImage = 'assets/backgrounds/Fondo de pantalla 9-16.png';
-    } else {
-        bgImage = 'assets/backgrounds/bg-main.png';
-    }
-    
-    document.documentElement.style.setProperty('--bg-image', `url('${bgImage}')`);
-}
-
-// Initialize device detection
-detectDeviceAspect();
-window.addEventListener('orientationchange', detectDeviceAspect);
-window.addEventListener('resize', detectDeviceAspect);
-
 // Character data
 const characters = [
     {
