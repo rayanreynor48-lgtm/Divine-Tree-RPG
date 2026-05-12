@@ -5,6 +5,7 @@ const characters = [
         name: '茓ノ影 I',
         title: 'Sombra de Espinas I',
         image: 'assets/ui/character-base.jpg',
+        emoji: '🥷',
         stats: {
             ps: 4677,
             atq: 702,
@@ -54,15 +55,55 @@ let cultivationProgress = 6;
 
 // Initialize
 function init() {
-    updateCharacterCard();
-    updateStats();
-    randomizeQuote();
+    // Cargar juego si existe
+    const savedGame = loadGame();
+    
+    if (savedGame) {
+        // Calcular ganancias offline
+        const gains = applyOfflineGains();
+        if (gains.coins > 0) {
+            showNotification(`Ganaste ${formatNumber(gains.coins)} monedas offline!`);
+        }
+    } else {
+        // Primer inicio
+        updateCharacterCard();
+        updateStats();
+        randomizeQuote();
+    }
 }
 
-// Navigation
+// Pantalla y navegación
 function goToScreen(screenClass) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.querySelector(screenClass).classList.add('active');
+}
+
+function switchScreen(screenName) {
+    stopIdleSystem(); // Parar idle antes de cambiar
+    
+    switch(screenName) {
+        case 'hub':
+            goToScreen('.hub-screen');
+            startIdleSystem(); // Reiniciar idle
+            updateHubDisplay();
+            break;
+        case 'battle':
+            showNotification('Pantalla de Batalla - Próximamente');
+            switchScreen('hub');
+            break;
+        case 'dungeon':
+            showNotification('Pantalla de Dungeon - Próximamente');
+            switchScreen('hub');
+            break;
+        case 'inventory':
+            showNotification('Pantalla de Inventario - Próximamente');
+            switchScreen('hub');
+            break;
+        case 'settings':
+            showNotification('Pantalla de Ajustes - Próximamente');
+            switchScreen('hub');
+            break;
+    }
 }
 
 function goToCharacterSelect() {
@@ -188,6 +229,14 @@ function simulateCultivation() {
         if (progress >= 100) {
             progress = 100;
             clearInterval(interval);
+            setTimeout(() => {
+                // Inicializar juego con personaje elegido
+                initializeWithCharacter(currentCharacter);
+                startIdleSystem();
+                startAutoSave();
+                switchScreen('hub');
+            }, 1000);
+            return;
         }
 
         fill.style.width = progress + '%';
@@ -200,5 +249,75 @@ function randomizeQuote() {
     document.getElementById('quote').textContent = quote;
 }
 
-// Start
-init();
+// HUB Display
+function updateHubDisplay() {
+    const char = characters[gameState.currentCharacter];
+    
+    // Actualizar nombre y realm
+    const charName = document.getElementById('hubCharName');
+    if (charName) {
+        charName.textContent = gameState.playerName;
+    }
+    
+    const realmEl = document.getElementById('hubRealm');
+    if (realmEl) {
+        realmEl.textContent = `Realm: ${gameState.realm} | Nivel: ${gameState.level}`;
+    }
+    
+    // Actualizar stats mini
+    const maxStats = 1000;
+    document.getElementById('ps-mini').style.width = (gameState.hp / gameState.maxHp * 100) + '%';
+    document.getElementById('atq-mini').style.width = (gameState.attack / maxStats * 100) + '%';
+    document.getElementById('def-mini').style.width = (gameState.defense / maxStats * 100) + '%';
+    
+    // Power breakdown
+    const power = calculatePowerScore();
+    const breakdown = document.getElementById('powerBreakdown');
+    if (breakdown) {
+        breakdown.innerHTML = `
+            <div style="font-size: 0.7rem; color: #00d4d4; margin-top: 5px;">
+                ATQ: ${Math.floor(gameState.attack)} | DEF: ${Math.floor(gameState.defense)} | AGI: ${Math.floor(gameState.agility)}
+            </div>
+        `;
+    }
+    
+    updateIdleUI();
+}
+
+// Notificaciones
+function showNotification(message) {
+    const notif = document.createElement('div');
+    notif.className = 'notification';
+    notif.textContent = message;
+    document.body.appendChild(notif);
+    
+    setTimeout(() => {
+        notif.classList.add('show');
+    }, 10);
+    
+    setTimeout(() => {
+        notif.classList.remove('show');
+        setTimeout(() => notif.remove(), 300);
+    }, 2000);
+}
+
+// Manejador de tabs de navegación
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+    
+    // Guardar antes de cerrar
+    window.addEventListener('beforeunload', () => {
+        stopIdleSystem();
+    });
+    
+    // Volver a cargar ganancias cuando vuelve el foco
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            const gains = applyOfflineGains();
+            if (gains.coins > 0) {
+                showNotification(`Ganaste ${formatNumber(gains.coins)} monedas!`);
+                updateIdleUI();
+            }
+        }
+    });
+});
