@@ -1002,6 +1002,7 @@ function openProfile(id) {
   const imagesGrid = document.getElementById('images-grid');
   imagesGrid.innerHTML = '';
   const imgFragment = document.createDocumentFragment();
+  const imagesData = [];
   for (let i = 1; i <= 12; i++) {
     let imgSrc = `assets/${currentProfile.folder}/${i}.jpg`;
     // Imágenes especiales de Dulce
@@ -1030,8 +1031,12 @@ function openProfile(id) {
     div.style.backgroundPosition = 'center';
     div.innerHTML = ``;
     div.addEventListener('click', () => openImageLightbox(imgSrc, i), { passive: true });
-    imgFragment.appendChild(div);
+    
+    imagesData.push({ div, date });
   }
+  // Ordenar imágenes por fecha (más reciente arriba, más antigua abajo)
+  imagesData.sort((a, b) => b.date - a.date);
+  imagesData.forEach(item => imgFragment.appendChild(item.div));
   imagesGrid.appendChild(imgFragment);
 
   // Videos
