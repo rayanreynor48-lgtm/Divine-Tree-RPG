@@ -933,12 +933,12 @@ main {
 
 <script>
 const profiles = [
-  { id:1, name:'Dulce', initial:'D', folder:'dulce', gradient:'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)' },
-  { id:2, name:'Valeria', initial:'V', folder:'valeria', gradient:'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)' },
-  { id:3, name:'Camila', initial:'C', folder:'camila', gradient:'linear-gradient(135deg, #f43f5e 0%, #fb7185 100%)' },
-  { id:4, name:'Mariana', initial:'M', folder:'mariana', gradient:'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' },
-  { id:5, name:'Daniela', initial:'D', folder:'daniela', gradient:'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)' },
-  { id:6, name:'Lucía', initial:'L', folder:'lucia', gradient:'linear-gradient(135deg, #f97316 0%, #ef4444 100%)' }
+  { id:1, name:'Dulce', initial:'D', folder:'Dulce', gradient:'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)' },
+  { id:2, name:'Valeria', initial:'V', folder:'Valeria', gradient:'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)' },
+  { id:3, name:'Camila', initial:'C', folder:'Camila', gradient:'linear-gradient(135deg, #f43f5e 0%, #fb7185 100%)' },
+  { id:4, name:'Mariana', initial:'M', folder:'Mariana', gradient:'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' },
+  { id:5, name:'Daniela', initial:'D', folder:'Daniela', gradient:'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)' },
+  { id:6, name:'Lucía', initial:'L', folder:'Lucia', gradient:'linear-gradient(135deg, #f97316 0%, #ef4444 100%)' }
 ];
 
 const imageGradients = [
@@ -1003,7 +1003,11 @@ function openProfile(id) {
   imagesGrid.innerHTML = '';
   const imgFragment = document.createDocumentFragment();
   for (let i = 1; i <= 12; i++) {
-    const imgSrc = `assets/${currentProfile.folder}/${i}.jpg`;
+    let imgSrc = `assets/${currentProfile.folder}/${i}.jpg`;
+    // Primera imagen de Dulce tiene nombre especial
+    if (currentProfile.folder === 'Dulce' && i === 1) {
+      imgSrc = `assets/${currentProfile.folder}/IMG-20210318-WA0006.jpg`;
+    }
     let date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + id));
     if (i === 1) {
@@ -1028,7 +1032,10 @@ function openProfile(id) {
   const vidFragment = document.createDocumentFragment();
   for (let i = 1; i <= 12; i++) {
     const videoSrc = `assets/${currentProfile.folder}/${i}.mp4`;
-    const thumbSrc = `assets/${currentProfile.folder}/${i}.jpg`; // usa la misma imagen como miniatura
+    let thumbSrc = `assets/${currentProfile.folder}/${i}.jpg`; // usa la misma imagen como miniatura
+    if (currentProfile.folder === 'Dulce' && i === 1) {
+      thumbSrc = `assets/${currentProfile.folder}/IMG-20210318-WA0006.jpg`;
+    }
     const date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + id - 1));
     allItems.push({ type: 'video', index: i, src: videoSrc, thumb: thumbSrc, date, duration: videoDurations[(i-1) % videoDurations.length] });
