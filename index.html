@@ -1004,14 +1004,17 @@ function openProfile(id) {
   const imgFragment = document.createDocumentFragment();
   for (let i = 1; i <= 12; i++) {
     let imgSrc = `assets/${currentProfile.folder}/${i}.jpg`;
-    // Primera imagen de Dulce tiene nombre especial
+    // Imágenes especiales de Dulce
     if (currentProfile.folder === 'Dulce' && i === 1) {
       imgSrc = `assets/${currentProfile.folder}/IMG-20210318-WA0006.jpg`;
     }
+    if (currentProfile.folder === 'Dulce' && i === 2) {
+      imgSrc = `assets/${currentProfile.folder}/IMG-20210316-WA0022.jpg`;
+    }
     let date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + id));
-    if (i === 1) {
-      date = new Date(2021, 3, 1); // 1/4/2021
+    if (i === 1 || (currentProfile.folder === 'Dulce' && i === 2)) {
+      date = new Date(2021, 3, 1); // 1/4/2021 para ambas
     }
     allItems.push({ type: 'image', index: i, src: imgSrc, date });
 
