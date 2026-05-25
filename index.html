@@ -1012,13 +1012,18 @@ function openProfile(id) {
     if (currentProfile.folder === 'Dulce' && i === 2) {
       imgSrc = `assets/${currentProfile.folder}/IMG-20210316-WA0022.jpg`;
     }
+    if (currentProfile.folder === 'Dulce' && i === 3) {
+      imgSrc = `assets/${currentProfile.folder}/IMG-20210314-WA0002.jpg`;
+    }
     let date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + id));
-    // Fechas especiales para Dulce - ambas 1/4/2021 pero con orden específico
+    // Fechas especiales para Dulce - las tres 1/4/2021 pero con orden específico
     if (currentProfile.folder === 'Dulce' && i === 1) {
       date = new Date(2021, 3, 1, 0, 0, 1); // IMG-20210318-WA0006.jpg - hasta abajo
     } else if (currentProfile.folder === 'Dulce' && i === 2) {
-      date = new Date(2021, 3, 1, 0, 0, 2); // IMG-20210316-WA0022.jpg - arriba de la anterior
+      date = new Date(2021, 3, 1, 0, 0, 2); // IMG-20210316-WA0022.jpg
+    } else if (currentProfile.folder === 'Dulce' && i === 3) {
+      date = new Date(2021, 3, 1, 0, 0, 3); // IMG-20210314-WA0002.jpg - arriba de las otras dos
     } else if (i === 1) {
       date = new Date(2021, 3, 1); // 1/4/2021 para otros perfiles
     }
