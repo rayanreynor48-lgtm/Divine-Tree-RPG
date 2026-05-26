@@ -491,6 +491,7 @@ main {
   position: relative;
   z-index: 5;
   background: var(--modal-bg);
+  flex-shrink: 0;
 }
 
 @media (min-width: 640px) {
@@ -533,6 +534,7 @@ main {
   scrollbar-width: none;
   position: relative;
   z-index: 10;
+  flex-shrink: 0;
 }
 .tabs::-webkit-scrollbar { display: none; }
 
@@ -575,6 +577,8 @@ main {
   overscroll-behavior: contain;
   position: relative;
   z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .tab-content.active { display: block; }
@@ -938,7 +942,8 @@ const profiles = [
   { id:3, name:'Camila', initial:'C', folder:'Camila', gradient:'linear-gradient(135deg, #f43f5e 0%, #fb7185 100%)' },
   { id:4, name:'Mariana', initial:'M', folder:'Mariana', gradient:'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' },
   { id:5, name:'Daniela', initial:'D', folder:'Daniela', gradient:'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)' },
-  { id:6, name:'Lucía', initial:'L', folder:'Lucia', gradient:'linear-gradient(135deg, #f97316 0%, #ef4444 100%)' }
+  { id:6, name:'Lucía', initial:'L', folder:'Lucia', gradient:'linear-gradient(135deg, #f97316 0%, #ef4444 100%)' },
+  { id:7, name:'Paulina', initial:'P', folder:'Paulina', gradient:'linear-gradient(135deg, #ec4899 0%, #f97316 100%)', imageCount:33, videoCount:12 }
 ];
 
 const imageGradients = [
@@ -1003,7 +1008,8 @@ function openProfile(id) {
   imagesGrid.innerHTML = '';
   const imgFragment = document.createDocumentFragment();
   const imagesData = [];
-  for (let i = 1; i <= 12; i++) {
+  const imgCount = currentProfile.imageCount || 12;
+  for (let i = 1; i <= imgCount; i++) {
     let imgSrc = `assets/${currentProfile.folder}/${i}.jpg`;
     // Imágenes especiales de Dulce
     if (currentProfile.folder === 'Dulce' && i === 1) {
@@ -1031,6 +1037,7 @@ function openProfile(id) {
 
     const div = document.createElement('div');
     div.className = 'thumb';
+    div.style.background = currentProfile.gradient;
     div.style.backgroundImage = `url(${imgSrc})`;
     div.style.backgroundSize = 'cover';
     div.style.backgroundPosition = 'center';
@@ -1048,7 +1055,8 @@ function openProfile(id) {
   const videosGrid = document.getElementById('videos-grid');
   videosGrid.innerHTML = '';
   const vidFragment = document.createDocumentFragment();
-  for (let i = 1; i <= 12; i++) {
+  const vidCount = currentProfile.videoCount || 12;
+  for (let i = 1; i <= vidCount; i++) {
     const videoSrc = `assets/${currentProfile.folder}/${i}.mp4`;
     const date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + id - 1));
@@ -1075,6 +1083,7 @@ function openProfile(id) {
     const div = document.createElement('div');
     div.className = 'thumb';
     if (item.type === 'image') {
+      div.style.background = currentProfile.gradient;
       div.style.backgroundImage = `url(${item.src})`;
       div.style.backgroundSize = 'cover';
       div.style.backgroundPosition = 'center';
