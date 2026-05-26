@@ -961,8 +961,6 @@ const imageGradients = [
   'linear-gradient(135deg, #d299c2 0%, #fef9d7 100%)'
 ];
 
-const videoDurations = ['2:14','3:42','1:58','4:21','2:55','3:07'];
-
 const grid = document.getElementById('profiles-grid');
 const modal = document.getElementById('profile-modal');
 const lightbox = document.getElementById('lightbox');
@@ -1056,20 +1054,72 @@ function openProfile(id) {
   videosGrid.innerHTML = '';
   const vidFragment = document.createDocumentFragment();
   const vidCount = currentProfile.videoCount || 12;
+  
+  const formatDuration = (seconds) => {
+    if (!seconds || isNaN(seconds)) return '--:--';
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+  
   for (let i = 1; i <= vidCount; i++) {
     const videoSrc = `assets/${currentProfile.folder}/${i}.mp4`;
     const date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + id - 1));
-    allItems.push({ type: 'video', index: i, src: videoSrc, date, duration: videoDurations[(i-1) % videoDurations.length] });
+    allItems.push({ type: 'video', index: i, src: videoSrc, date });
 
     const div = document.createElement('div');
     div.className = 'thumb';
     div.style.background = currentProfile.gradient;
     div.style.backgroundSize = 'cover';
     div.style.backgroundPosition = 'center';
-    div.innerHTML = `<div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"/></svg></div><span class="thumb-number">${videoDurations[(i-1) % videoDurations.length]}</span>`;
+    div.innerHTML = `<div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"/></svg></div><span class="thumb-number">--:--</span>`;
     div.addEventListener('click', () => openVideoLightbox(videoSrc), { passive: true });
     vidFragment.appendChild(div);
+    
+    // Cargar metadata automáticamente para duración y miniatura
+    const tempVideo = document.createElement('video');
+    tempVideo.preload = 'metadata';
+    tempVideo.src = videoSrc;
+    tempVideo.muted = true;
+    tempVideo.playsInline = true;
+    tempVideo.crossOrigin = 'anonymous';
+    
+    tempVideo.addEventListener('loadedmetadata', () => {
+      const durationSpan = div.querySelector('.thumb-number');
+      if (durationSpan) durationSpan.textContent = formatDuration(tempVideo.duration);
+      
+      // Intentar capturar frame para miniatura
+      const captureFrame = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = tempVideo.videoWidth || 320;
+          canvas.height = tempVideo.videoHeight || 180;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
+          const dataURL = canvas.toDataURL('image/jpeg', 0.7);
+          div.style.backgroundImage = `url(${dataURL})`;
+        } catch (e) {
+          // Si falla CORS, mantener gradiente
+        }
+      };
+      
+      if (tempVideo.readyState >= 2) {
+        tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
+      } else {
+        tempVideo.addEventListener('loadeddata', () => {
+          tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
+        }, { once: true });
+      }
+      
+      tempVideo.addEventListener('seeked', captureFrame, { once: true });
+    });
+    
+    tempVideo.addEventListener('error', () => {
+      const durationSpan = div.querySelector('.thumb-number');
+      if (durationSpan) durationSpan.textContent = 'error';
+      div.style.opacity = '0.6';
+    });
   }
   videosGrid.appendChild(vidFragment);
 
@@ -1154,7 +1204,7 @@ function openVideoLightbox(src) {
   lightboxBody.innerHTML = `
     <div style="display:flex;flex-direction:column;align-items:center;width:100%">
       <div class="video-player" id="fs-video" style="width:100%;max-width:900px">
-        <video src="${src}" controls autoplay playsinline style="width:100%; height:auto; max-height:70vh; background:#000; border-radius:12px"></video>
+        <video src="${src}" controls autoplay playsinline preload="metadata" style="width:100%; height:auto; max-height:70vh; background:#000; border-radius:12px"></video>
       </div>
       <button class="fullscreen-btn" id="fullscreen-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
