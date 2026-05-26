@@ -862,6 +862,40 @@ main {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Fix pantalla completa centrada */
+#fs-video:fullscreen, #fs-video:-webkit-full-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  max-width: none;
+}
+#fs-video:fullscreen video, #fs-video:-webkit-full-screen video {
+  width: 100%;
+  height: 100%;
+  max-height: 100vh;
+  object-fit: contain;
+  border-radius: 0;
+}
+#fs-image:fullscreen, #fs-image:-webkit-full-screen {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  aspect-ratio: auto;
+  background-size: contain;
+  background-color: #000;
+  border-radius: 0;
+}
+video:fullscreen, video:-webkit-full-screen {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
 </style>
 </head>
 <body>
@@ -1149,6 +1183,32 @@ function openProfile(profileId) {
       div.style.backgroundPosition = 'center';
       div.innerHTML = `<div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"/></svg></div><span class="thumb-number">${formatDate(item.date)}</span>`;
       div.addEventListener('click', () => openVideoLightbox(item.src), { passive: true });
+      
+      // Cargar miniatura igual que en Videos
+      const tempVideo = document.createElement('video');
+      tempVideo.preload = 'metadata';
+      tempVideo.src = item.src;
+      tempVideo.muted = true;
+      tempVideo.playsInline = true;
+      tempVideo.crossOrigin = 'anonymous';
+      const captureFrame = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = tempVideo.videoWidth || 320;
+          canvas.height = tempVideo.videoHeight || 180;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
+          const dataURL = canvas.toDataURL('image/jpeg', 0.7);
+          div.style.backgroundImage = `url(${dataURL})`;
+        } catch (e) {}
+      };
+      tempVideo.addEventListener('loadeddata', () => {
+        tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
+      });
+      tempVideo.addEventListener('seeked', captureFrame);
+      if (tempVideo.readyState >= 2) {
+        tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
+      }
     }
     todoFragment.appendChild(div);
   });
@@ -1223,7 +1283,8 @@ function openVideoLightbox(src) {
   // Botón pantalla completa
   setTimeout(() => {
     const btn = document.getElementById('fullscreen-btn');
-    const video = document.getElementById('fs-video');
+    const videoContainer = document.getElementById('fs-video');
+    const video = videoContainer ? videoContainer.querySelector('video') : null;
     if (btn && video) {
       btn.addEventListener('click', () => {
         if (video.requestFullscreen) {
