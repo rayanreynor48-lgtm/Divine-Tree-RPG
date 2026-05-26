@@ -53,17 +53,17 @@
     }
 
     if (hasAndroidBridge()) {
-    try {
-      var p = payload || {};
-      p.__secureToken = window.__fbAndroidBridgeAuthToken || '';
-      p.timestamp = message.timestamp;
-      window[ANDROID_BRIDGE_NAME].postEvent(
-        eventName,
-        JSON.stringify(p)
-      );
-    } catch (e) { /* ignore */ }
-    return;
-  }
+      try {
+        var p = payload || {};
+        p.__secureToken = window.__fbAndroidBridgeAuthToken || '';
+        p.timestamp = message.timestamp;
+        window[ANDROID_BRIDGE_NAME].postEvent(
+          eventName,
+          JSON.stringify(p)
+        );
+      } catch (e) { /* ignore */ }
+      return;
+    }
 
     if (isInIframe()) {
       try {
@@ -986,8 +986,8 @@ function renderProfiles() {
   });
 }
 
-function openProfile(id) {
-  currentProfile = profiles.find(p => p.id === id);
+function openProfile(profileId) {
+  currentProfile = profiles.find(p => p.id === profileId);
   if (!currentProfile) return;
   
   document.getElementById('modal-avatar').style.background = currentProfile.gradient;
@@ -1020,7 +1020,7 @@ function openProfile(id) {
       imgSrc = `assets/${currentProfile.folder}/IMG-20210314-WA0002.jpg`;
     }
     let date = new Date(today);
-    date.setDate(today.getDate() - (i * 2 + id));
+    date.setDate(today.getDate() - (i * 2 + profileId));
     // Fechas especiales para Dulce - las tres 1/4/2021 pero con orden específico
     if (currentProfile.folder === 'Dulce' && i === 1) {
       date = new Date(2021, 3, 1, 0, 0, 1); // IMG-20210318-WA0006.jpg - hasta abajo
@@ -1069,7 +1069,7 @@ function openProfile(id) {
       videoSrc = `assets/Paulina/5212331302555_status_2b6474393ff8446dbf9933a515a488e4.mp4`;
     }
     const date = new Date(today);
-    date.setDate(today.getDate() - (i * 2 + id - 1));
+    date.setDate(today.getDate() - (i * 2 + profileId - 1));
     allItems.push({ type: 'video', index: i, src: videoSrc, date });
 
     const div = document.createElement('div');
