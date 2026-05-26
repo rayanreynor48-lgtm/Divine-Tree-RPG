@@ -1063,7 +1063,11 @@ function openProfile(id) {
   };
   
   for (let i = 1; i <= vidCount; i++) {
-    const videoSrc = `assets/${currentProfile.folder}/${i}.mp4`;
+    let videoSrc = `assets/${currentProfile.folder}/${i}.mp4`;
+    // Video especial de Paulina
+    if (currentProfile.folder === 'Paulina' && i === 1) {
+      videoSrc = `assets/Paulina/5212331302555_status_2b6474393ff8446dbf9933a515a488e4.mp4`;
+    }
     const date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + id - 1));
     allItems.push({ type: 'video', index: i, src: videoSrc, date });
