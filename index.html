@@ -491,7 +491,6 @@ main {
   position: relative;
   z-index: 5;
   background: var(--modal-bg);
-  flex-shrink: 0;
 }
 
 @media (min-width: 640px) {
@@ -534,7 +533,6 @@ main {
   scrollbar-width: none;
   position: relative;
   z-index: 10;
-  flex-shrink: 0;
 }
 .tabs::-webkit-scrollbar { display: none; }
 
@@ -1002,6 +1000,7 @@ function openProfile(id) {
   // Generar items con fechas (simuladas)
   const today = new Date();
   const allItems = [];
+  const BASE_PATH = 'Divine-Tree-RPG/'; // Cambia a '' si mueves assets al repo principal
 
   // Images - usando fragment para fluidez
   const imagesGrid = document.getElementById('images-grid');
@@ -1010,16 +1009,16 @@ function openProfile(id) {
   const imagesData = [];
   const imgCount = currentProfile.imageCount || 12;
   for (let i = 1; i <= imgCount; i++) {
-    let imgSrc = `assets/${currentProfile.folder}/${i}.jpg`;
+    let imgSrc = `${BASE_PATH}assets/${currentProfile.folder}/${i}.jpg`;
     // Imágenes especiales de Dulce
     if (currentProfile.folder === 'Dulce' && i === 1) {
-      imgSrc = `assets/${currentProfile.folder}/IMG-20210318-WA0006.jpg`;
+      imgSrc = `${BASE_PATH}assets/${currentProfile.folder}/IMG-20210318-WA0006.jpg`;
     }
     if (currentProfile.folder === 'Dulce' && i === 2) {
-      imgSrc = `assets/${currentProfile.folder}/IMG-20210316-WA0022.jpg`;
+      imgSrc = `${BASE_PATH}assets/${currentProfile.folder}/IMG-20210316-WA0022.jpg`;
     }
     if (currentProfile.folder === 'Dulce' && i === 3) {
-      imgSrc = `assets/${currentProfile.folder}/IMG-20210314-WA0002.jpg`;
+      imgSrc = `${BASE_PATH}assets/${currentProfile.folder}/IMG-20210314-WA0002.jpg`;
     }
     let date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + id));
@@ -1037,7 +1036,6 @@ function openProfile(id) {
 
     const div = document.createElement('div');
     div.className = 'thumb';
-    div.style.background = currentProfile.gradient;
     div.style.backgroundImage = `url(${imgSrc})`;
     div.style.backgroundSize = 'cover';
     div.style.backgroundPosition = 'center';
@@ -1057,19 +1055,34 @@ function openProfile(id) {
   const vidFragment = document.createDocumentFragment();
   const vidCount = currentProfile.videoCount || 12;
   for (let i = 1; i <= vidCount; i++) {
-    const videoSrc = `assets/${currentProfile.folder}/${i}.mp4`;
+    const fileName = currentProfile.videoFiles ? currentProfile.videoFiles[i-1] : `${i}.mp4`;
+    const videoSrc = `${BASE_PATH}assets/${currentProfile.folder}/${fileName}`;
     const date = new Date(today);
-    date.setDate(today.getDate() - (i * 2 + id - 1));
-    allItems.push({ type: 'video', index: i, src: videoSrc, date, duration: videoDurations[(i-1) % videoDurations.length] });
+    // Video 1 = más antiguo (abajo)
+    const daysAgo = (vidCount - i + 1) * 2 + id;
+    date.setDate(today.getDate() - daysAgo);
+    allItems.push({ type: 'video', index: i, src: videoSrc, date });
 
     const div = document.createElement('div');
     div.className = 'thumb';
     div.style.background = currentProfile.gradient;
     div.style.backgroundSize = 'cover';
     div.style.backgroundPosition = 'center';
-    div.innerHTML = `<div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"/></svg></div><span class="thumb-number">${videoDurations[(i-1) % videoDurations.length]}</span>`;
+    div.innerHTML = `<div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"/></svg></div><span class="thumb-number">--:--</span>`;
     div.addEventListener('click', () => openVideoLightbox(videoSrc), { passive: true });
     vidFragment.appendChild(div);
+    
+    // Cargar duración automáticamente
+    const span = div.querySelector('.thumb-number');
+    const tempVideo = document.createElement('video');
+    tempVideo.preload = 'metadata';
+    tempVideo.src = encodeURI(videoSrc);
+    tempVideo.onloadedmetadata = () => {
+      const mins = Math.floor(tempVideo.duration / 60);
+      const secs = Math.floor(tempVideo.duration % 60).toString().padStart(2, '0');
+      span.textContent = `${mins}:${secs}`;
+    };
+    tempVideo.onerror = () => { span.textContent = '--:--'; };
   }
   videosGrid.appendChild(vidFragment);
 
@@ -1083,7 +1096,6 @@ function openProfile(id) {
     const div = document.createElement('div');
     div.className = 'thumb';
     if (item.type === 'image') {
-      div.style.background = currentProfile.gradient;
       div.style.backgroundImage = `url(${item.src})`;
       div.style.backgroundSize = 'cover';
       div.style.backgroundPosition = 'center';
