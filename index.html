@@ -1137,7 +1137,7 @@ function openProfile(profileId) {
     }
     const date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + profileId - 1));
-    // Fechas especiales para Paulina
+    // Fechas especiales para Paulina - invertir orden como en Dulce
     if (currentProfile.folder === 'Paulina' && i === 1) {
       date.setTime(new Date(2026, 2, 3, 0, 0, 1).getTime()); // 3/3/2026
     } else if (currentProfile.folder === 'Paulina' && i === 2) {
@@ -1176,6 +1176,59 @@ function openProfile(profileId) {
     div.innerHTML = `<div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"/></svg></div><span class="thumb-number">--:--</span>`;
     div.addEventListener('click', () => openVideoLightbox(videoSrc), { passive: true });
     vidFragment.appendChild(div);
+    
+    // Cargar metadata de forma no bloqueante para no congelar la UI
+    const loadMetadata = () => {
+      const tempVideo = document.createElement('video');
+      tempVideo.preload = 'metadata';
+      tempVideo.src = videoSrc;
+      tempVideo.muted = true;
+      tempVideo.playsInline = true;
+      tempVideo.crossOrigin = 'anonymous';
+      
+      tempVideo.addEventListener('loadedmetadata', () => {
+        const durationSpan = div.querySelector('.thumb-number');
+        if (durationSpan) durationSpan.textContent = formatDuration(tempVideo.duration);
+        
+        // Intentar capturar frame para miniatura
+        const captureFrame = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = tempVideo.videoWidth || 320;
+            canvas.height = tempVideo.videoHeight || 180;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
+            const dataURL = canvas.toDataURL('image/jpeg', 0.7);
+            div.style.backgroundImage = `url(${dataURL})`;
+          } catch (e) {
+            // Si falla CORS, mantener gradiente
+          }
+        };
+        
+        if (tempVideo.readyState >= 2) {
+          tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
+        } else {
+          tempVideo.addEventListener('loadeddata', () => {
+            tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
+          }, { once: true });
+        }
+        
+        tempVideo.addEventListener('seeked', captureFrame, { once: true });
+      });
+      
+      tempVideo.addEventListener('error', () => {
+        const durationSpan = div.querySelector('.thumb-number');
+        if (durationSpan) durationSpan.textContent = 'error';
+        div.style.opacity = '0.6';
+      });
+    };
+    
+    // Diferir carga para no bloquear renderizado
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(loadMetadata, { timeout: 1000 });
+    } else {
+      setTimeout(loadMetadata, 50);
+    }
     
     // Cargar metadata automáticamente para duración y miniatura
     const tempVideo = document.createElement('video');
@@ -1221,68 +1274,12 @@ function openProfile(profileId) {
       div.style.opacity = '0.6';
     });
   }
-  // Reordenar videos por fecha descendente
-  const videoData = [];
-  for (let i = 1; i <= vidCount; i++) {
-    const videoItem = allItems.find(item => item.type === 'video' && item.index === i);
-    if (videoItem) videoData.push(videoItem);
-  }
-  videoData.sort((a, b) => b.date - a.date);
   
+  // Reordenar videos: pasar de 1-12 a 12-1 (más reciente al inicio)
+  const videoChildNodes = Array.from(vidFragment.childNodes);
+  videosGrid.appendChild(document.createDocumentFragment());
   videosGrid.innerHTML = '';
-  const videoFragmentSorted = document.createDocumentFragment();
-  
-  videoData.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'thumb';
-    div.style.background = currentProfile.gradient;
-    div.style.backgroundSize = 'cover';
-    div.style.backgroundPosition = 'center';
-    div.innerHTML = `<div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"/></svg></div><span class="thumb-number">--:--</span>`;
-    div.addEventListener('click', () => openVideoLightbox(item.src), { passive: true });
-    videoFragmentSorted.appendChild(div);
-    
-    const tempVideo = document.createElement('video');
-    tempVideo.preload = 'metadata';
-    tempVideo.src = item.src;
-    tempVideo.muted = true;
-    tempVideo.playsInline = true;
-    tempVideo.crossOrigin = 'anonymous';
-    
-    tempVideo.addEventListener('loadedmetadata', () => {
-      const durationSpan = div.querySelector('.thumb-number');
-      if (durationSpan) durationSpan.textContent = formatDuration(tempVideo.duration);
-      
-      const captureFrame = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = tempVideo.videoWidth || 320;
-          canvas.height = tempVideo.videoHeight || 180;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
-          const dataURL = canvas.toDataURL('image/jpeg', 0.7);
-          div.style.backgroundImage = `url(${dataURL})`;
-        } catch (e) {}
-      };
-      
-      if (tempVideo.readyState >= 2) {
-        tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
-      } else {
-        tempVideo.addEventListener('loadeddata', () => {
-          tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
-        }, { once: true });
-      }
-      
-      tempVideo.addEventListener('seeked', captureFrame, { once: true });
-    });
-    
-    tempVideo.addEventListener('error', () => {
-      const durationSpan = div.querySelector('.thumb-number');
-      if (durationSpan) durationSpan.textContent = 'error';
-      div.style.opacity = '0.6';
-    });
-  });
-  videosGrid.appendChild(videoFragmentSorted);
+  videoChildNodes.reverse().forEach(node => videosGrid.appendChild(node));
 
   // Todo - ordenado por fecha
   const todoGrid = document.getElementById('todo-grid');
