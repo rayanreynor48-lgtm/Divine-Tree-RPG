@@ -1137,7 +1137,7 @@ function openProfile(profileId) {
     }
     const date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + profileId - 1));
-    // Fechas especiales para Paulina - invertir orden como en Dulce
+    // Fechas especiales para Paulina
     if (currentProfile.folder === 'Paulina' && i === 1) {
       date.setTime(new Date(2026, 2, 3, 0, 0, 1).getTime()); // 3/3/2026
     } else if (currentProfile.folder === 'Paulina' && i === 2) {
@@ -1149,7 +1149,7 @@ function openProfile(profileId) {
     } else if (currentProfile.folder === 'Paulina' && i === 5) {
       date.setTime(new Date(2026, 2, 11, 0, 0, 5).getTime()); // 11/3/2026
     } else if (currentProfile.folder === 'Paulina' && i === 6) {
-      date.setTime(new Date(2026, 2, 11, 0, 0, 6).getTime()); // 11/3/2026 - corregido de "11/32025"
+      date.setTime(new Date(2025, 2, 11, 0, 0, 6).getTime()); // 11/3/2025
     } else if (currentProfile.folder === 'Paulina' && i === 7) {
       date.setTime(new Date(2026, 2, 15, 0, 0, 7).getTime()); // 15/3/2026
     } else if (currentProfile.folder === 'Paulina' && i === 8) {
