@@ -1102,8 +1102,20 @@ function openProfile(profileId) {
     if (currentProfile.folder === 'Paulina' && i === 1) {
       videoSrc = `assets/Paulina/5212331302555_status_2b6474393ff8446dbf9933a515a488e4.mp4`;
     }
+    if (currentProfile.folder === 'Paulina' && i === 2) {
+      videoSrc = `assets/Paulina/5212331302555_status_2c948168f25a4f08b9233e5139d856e9.mp4`;
+    }
     const date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + profileId - 1));
+    // Fechas especiales para Paulina - invertir orden como en Dulce
+    if (currentProfile.folder === 'Paulina' && i === 1) {
+      date.setTime(new Date(2026, 2, 3, 0, 0, 1).getTime()); // 3/3/2026
+    } else if (currentProfile.folder === 'Paulina' && i === 2) {
+      date.setTime(new Date(2026, 2, 3, 0, 0, 2).getTime()); // 3/3/2026
+    } else if (currentProfile.folder === 'Paulina') {
+      // invertir orden: video 12 más reciente
+      date.setDate(today.getDate() - ((vidCount - i + 1) * 2 + profileId - 1));
+    }
     allItems.push({ type: 'video', index: i, src: videoSrc, date });
 
     const div = document.createElement('div');
