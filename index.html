@@ -1096,7 +1096,6 @@ function openProfile(profileId) {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
   
-  const videosData = [];
   for (let i = 1; i <= vidCount; i++) {
     let videoSrc = `assets/${currentProfile.folder}/${i}.mp4`;
     // Video especial de Paulina
@@ -1106,6 +1105,36 @@ function openProfile(profileId) {
     if (currentProfile.folder === 'Paulina' && i === 2) {
       videoSrc = `assets/Paulina/5212331302555_status_2c948168f25a4f08b9233e5139d856e9.mp4`;
     }
+    if (currentProfile.folder === 'Paulina' && i === 3) {
+      videoSrc = `assets/Paulina/5212331302555_status_6d8cc3a9f2b443978d35d47dfdfdedc3.mp4`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 4) {
+      videoSrc = `assets/Paulina/VID-mmls8qby.mp4`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 5) {
+      videoSrc = `assets/Paulina/VID-mmlsbere.mp4`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 6) {
+      videoSrc = `assets/Paulina/5212331302555_status_f22573ab5c434d4ba60a2f748d707fc9.mp4`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 7) {
+      videoSrc = `assets/Paulina/5212331302555_status_a369154501c94f64ae5478310753e743.mp4`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 8) {
+      videoSrc = `assets/Paulina/5212331302555_status_6c1cc63f031544219c24201759f23163.mp4`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 9) {
+      videoSrc = `assets/Paulina/5212331302555_status_88546b10a02f4fc5ae8e7bce396aebdd.mp4`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 10) {
+      videoSrc = `assets/Paulina/5212331302555_status_a38e227f93f3401c9e0c4287d3f6a5e9.mp4`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 11) {
+      videoSrc = `assets/Paulina/7602763206667@lid_status_b12037a20c064179b104ba9107a7c59e.mp4`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 12) {
+      videoSrc = `assets/Paulina/SaveF.app_AQMdMmyJo8wUkTHeZyBJKy1Mdy2B-HFk1F8pE5-Jyz4JXHF7wOhVdebynKgnrll-m-zkPcUz3UrBk1NJcw5jrxc25jcU_UJSppm2gyDVt6w5kQ_720p_(HD).mp4`;
+    }
     const date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + profileId - 1));
     // Fechas especiales para Paulina - invertir orden como en Dulce
@@ -1113,6 +1142,26 @@ function openProfile(profileId) {
       date.setTime(new Date(2026, 2, 3, 0, 0, 1).getTime()); // 3/3/2026
     } else if (currentProfile.folder === 'Paulina' && i === 2) {
       date.setTime(new Date(2026, 2, 3, 0, 0, 2).getTime()); // 3/3/2026
+    } else if (currentProfile.folder === 'Paulina' && i === 3) {
+      date.setTime(new Date(2026, 2, 10, 0, 0, 3).getTime()); // 10/3/2026
+    } else if (currentProfile.folder === 'Paulina' && i === 4) {
+      date.setTime(new Date(2026, 2, 11, 0, 0, 4).getTime()); // 11/3/2026
+    } else if (currentProfile.folder === 'Paulina' && i === 5) {
+      date.setTime(new Date(2026, 2, 11, 0, 0, 5).getTime()); // 11/3/2026
+    } else if (currentProfile.folder === 'Paulina' && i === 6) {
+      date.setTime(new Date(2026, 2, 11, 0, 0, 6).getTime()); // 11/3/2026 - corregido de "11/32025"
+    } else if (currentProfile.folder === 'Paulina' && i === 7) {
+      date.setTime(new Date(2026, 2, 15, 0, 0, 7).getTime()); // 15/3/2026
+    } else if (currentProfile.folder === 'Paulina' && i === 8) {
+      date.setTime(new Date(2026, 2, 17, 0, 0, 8).getTime()); // 17/3/2026
+    } else if (currentProfile.folder === 'Paulina' && i === 9) {
+      date.setTime(new Date(2026, 2, 23, 0, 0, 9).getTime()); // 23/3/2026
+    } else if (currentProfile.folder === 'Paulina' && i === 10) {
+      date.setTime(new Date(2026, 2, 24, 0, 0, 10).getTime()); // 24/3/2026
+    } else if (currentProfile.folder === 'Paulina' && i === 11) {
+      date.setTime(new Date(2026, 2, 26, 0, 0, 11).getTime()); // 26/3/2026
+    } else if (currentProfile.folder === 'Paulina' && i === 12) {
+      date.setTime(new Date(2026, 3, 5, 0, 0, 12).getTime()); // 5/4/2026
     } else if (currentProfile.folder === 'Paulina') {
       // invertir orden: video 12 más reciente
       date.setDate(today.getDate() - ((vidCount - i + 1) * 2 + profileId - 1));
@@ -1126,7 +1175,7 @@ function openProfile(profileId) {
     div.style.backgroundPosition = 'center';
     div.innerHTML = `<div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"/></svg></div><span class="thumb-number">--:--</span>`;
     div.addEventListener('click', () => openVideoLightbox(videoSrc), { passive: true });
-    videosData.push({div, date});
+    vidFragment.appendChild(div);
     
     // Cargar metadata automáticamente para duración y miniatura
     const tempVideo = document.createElement('video');
@@ -1172,11 +1221,6 @@ function openProfile(profileId) {
       div.style.opacity = '0.6';
     });
   }
-  // Ordenar videos por fecha para Paulina (igual que en Todos)
-  if (currentProfile.folder === 'Paulina') {
-    videosData.sort((a, b) => b.date - a.date);
-  }
-  videosData.forEach(v => vidFragment.appendChild(v.div));
   videosGrid.appendChild(vidFragment);
 
   // Todo - ordenado por fecha
