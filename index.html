@@ -1096,6 +1096,7 @@ function openProfile(profileId) {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
   
+  const videosData = [];
   for (let i = 1; i <= vidCount; i++) {
     let videoSrc = `assets/${currentProfile.folder}/${i}.mp4`;
     // Video especial de Paulina
@@ -1125,7 +1126,7 @@ function openProfile(profileId) {
     div.style.backgroundPosition = 'center';
     div.innerHTML = `<div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"/></svg></div><span class="thumb-number">--:--</span>`;
     div.addEventListener('click', () => openVideoLightbox(videoSrc), { passive: true });
-    vidFragment.appendChild(div);
+    videosData.push({div, date});
     
     // Cargar metadata automáticamente para duración y miniatura
     const tempVideo = document.createElement('video');
@@ -1171,6 +1172,11 @@ function openProfile(profileId) {
       div.style.opacity = '0.6';
     });
   }
+  // Ordenar videos por fecha para Paulina (igual que en Todos)
+  if (currentProfile.folder === 'Paulina') {
+    videosData.sort((a, b) => b.date - a.date);
+  }
+  videosData.forEach(v => vidFragment.appendChild(v.div));
   videosGrid.appendChild(vidFragment);
 
   // Todo - ordenado por fecha
