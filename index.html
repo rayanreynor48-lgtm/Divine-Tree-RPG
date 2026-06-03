@@ -1053,9 +1053,12 @@ function openProfile(profileId) {
     if (currentProfile.folder === 'Dulce' && i === 3) {
       imgSrc = `assets/${currentProfile.folder}/IMG-20210314-WA0002.jpg`;
     }
-    // Imagen especial de Paulina
+    // Imágenes especiales de Paulina
     if (currentProfile.folder === 'Paulina' && i === 1) {
       imgSrc = `assets/Paulina/${encodeURIComponent('Mi Diosa😍😍😍 20210321_193744.jpg')}`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 2) {
+      imgSrc = `assets/Paulina/IMG-20210321-WA0353.jpg`;
     }
     let date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + profileId));
@@ -1067,7 +1070,9 @@ function openProfile(profileId) {
     } else if (currentProfile.folder === 'Dulce' && i === 3) {
       date = new Date(2021, 3, 1, 0, 0, 3); // IMG-20210314-WA0002.jpg - arriba de las otras dos
     } else if (currentProfile.folder === 'Paulina' && i === 1) {
-      date = new Date(2021, 2, 30, 0, 0, 0); // 30/3/2021 para imagen Paulina
+      date = new Date(3021, 2, 30, 0, 0, 0); // Mi Diosa😍😍😍 - 30/3/3021 (más reciente, arriba)
+    } else if (currentProfile.folder === 'Paulina' && i === 2) {
+      date = new Date(2021, 2, 30, 0, 0, 0); // IMG-20210321-WA0353.jpg - 30/3/2021 (más antigua, abajo)
     } else if (i === 1) {
       date = new Date(2021, 3, 1); // 1/4/2021 para otros perfiles
     }
