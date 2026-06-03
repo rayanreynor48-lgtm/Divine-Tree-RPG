@@ -1063,6 +1063,24 @@ function openProfile(profileId) {
     if (currentProfile.folder === 'Paulina' && i === 3) {
       imgSrc = `assets/Paulina/IMG-20201001-WA0033.jpg`;
     }
+    if (currentProfile.folder === 'Paulina' && i === 4) {
+      imgSrc = `assets/Paulina/IMG-20201001-WA0026.jpg`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 5) {
+      imgSrc = `assets/Paulina/IMG-20201001-WA0025.jpg`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 6) {
+      imgSrc = `assets/Paulina/IMG-20201001-WA0024.jpg`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 7) {
+      imgSrc = `assets/Paulina/IMG-20201001-WA0023.jpg`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 8) {
+      imgSrc = `assets/Paulina/IMG-20201001-WA0022.jpg`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 9) {
+      imgSrc = `assets/Paulina/FB_IMG-1612563811423591.jpg`;
+    }
     let date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + profileId));
     // Fechas especiales para Dulce - las tres 1/4/2021 pero con orden específico
@@ -1078,8 +1096,18 @@ function openProfile(profileId) {
       date = new Date(2021, 2, 30, 0, 0, 2); // IMG-20210321-WA0353.jpg - 30/3/2021 (original)
     } else if (currentProfile.folder === 'Paulina' && i === 3) {
       date = new Date(2021, 2, 30, 0, 0, 3); // IMG-20201001-WA0033.jpg - 30/3/2021 (original)
-    } else {
-      date = new Date(2021, 3, 1); // 1/4/2021 para otros perfiles
+    } else if (currentProfile.folder === 'Paulina' && i === 4) {
+      date = new Date(2021, 2, 30, 0, 0, 4); // IMG-20201001-WA0026.jpg - 30/3/2021 (original)
+    } else if (currentProfile.folder === 'Paulina' && i === 5) {
+      date = new Date(2021, 2, 30, 0, 0, 5); // IMG-20201001-WA0025.jpg - 30/3/2021 (original)
+    } else if (currentProfile.folder === 'Paulina' && i === 6) {
+      date = new Date(2021, 2, 30, 0, 0, 6); // IMG-20201001-WAOO24.jpg - 30/3/2021 (original)
+    } else if (currentProfile.folder === 'Paulina' && i === 7) {
+      date = new Date(2021, 2, 30, 0, 0, 7); // IMG-20201001-WA0023.jpg - 30/3/2021 (original)
+    } else if (currentProfile.folder === 'Paulina' && i === 8) {
+      date = new Date(2021, 2, 30, 0, 0, 8); // IMG-20201001-WA0022.jpg - 30/3/2021 (original)
+    } else if (currentProfile.folder === 'Paulina' && i === 9) {
+      date = new Date(2021, 2, 30, 0, 0, 9); // FB_IMG-1612563811423591.jpg - 30/3/2021 (original)
     }
     allItems.push({ type: 'image', index: i, src: imgSrc, date });
 
@@ -1199,7 +1227,7 @@ function openProfile(profileId) {
     videosMetadata.push({ div, src: videoSrc, loaded: false });
   }
   
-  // Queue secuencial para cargar miniaturas sin duplicados
+  // Queue secuencial para cargar miniaturas usando función reutilizable
   let videoLoadIndex = 0;
   const loadNextVideoMetadata = () => {
     if (videoLoadIndex >= videosMetadata.length) return;
@@ -1214,87 +1242,9 @@ function openProfile(profileId) {
     
     item.loaded = true;
     
-    const tempVideo = document.createElement('video');
-    tempVideo.preload = 'metadata';
-    tempVideo.src = item.src;
-    tempVideo.muted = true;
-    tempVideo.playsInline = true;
-    tempVideo.crossOrigin = 'anonymous';
-    tempVideo.style.display = 'none';
-    document.body.appendChild(tempVideo);
-    
-    let completed = false;
-    
-    const onComplete = () => {
-      if (completed) return;
-      completed = true;
-      try {
-        tempVideo.pause();
-        tempVideo.src = '';
-        if (tempVideo.parentNode) tempVideo.parentNode.removeChild(tempVideo);
-      } catch (e) {}
-      // Mayor delay para videos lentos
+    loadVideoThumbnail(item.src, item.div, () => {
       setTimeout(loadNextVideoMetadata, 200);
-    };
-    
-    const timeoutHandle = setTimeout(() => {
-      if (!completed) {
-        const durationSpan = item.div.querySelector('.thumb-number');
-        if (durationSpan) durationSpan.textContent = 'timeout';
-        onComplete();
-      }
-    }, 10000); // 10 segundos timeout máximo
-    
-    tempVideo.addEventListener('loadedmetadata', () => {
-      clearTimeout(timeoutHandle);
-      const durationSpan = item.div.querySelector('.thumb-number');
-      if (durationSpan && durationSpan.textContent !== 'timeout') {
-        durationSpan.textContent = formatDuration(tempVideo.duration);
-      }
-      
-      let frameCaptured = false;
-      const captureFrame = () => {
-        if (frameCaptured) return;
-        frameCaptured = true;
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = tempVideo.videoWidth || 320;
-          canvas.height = tempVideo.videoHeight || 180;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
-          const dataURL = canvas.toDataURL('image/jpeg', 0.7);
-          item.div.style.backgroundImage = `url(${dataURL})`;
-        } catch (e) {
-          // CORS u otro error canvas: mantener gradiente, no marcar error
-        }
-        onComplete();
-      };
-      
-      // Esperar a readyState >= 2 antes de seekear
-      if (tempVideo.readyState >= 2) {
-        try {
-          tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
-        } catch (e) {
-          onComplete();
-        }
-      } else {
-        tempVideo.addEventListener('loadeddata', () => {
-          try {
-            tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
-          } catch (e) {
-            onComplete();
-          }
-        }, { once: true });
-      }
-      
-      tempVideo.addEventListener('seeked', captureFrame, { once: true });
-    }, { once: true });
-    
-    tempVideo.addEventListener('error', () => {
-      clearTimeout(timeoutHandle);
-      // No marcar visualmente, solo completar. Video fallo pero no es catastrofico
-      onComplete();
-    }, { once: true });
+    }, formatDuration);
   };
   
   // Iniciar queue después de renderizado
@@ -1337,7 +1287,7 @@ function openProfile(profileId) {
   });
   todoGrid.appendChild(todoFragment);
   
-  // Queue secuencial para miniaturas de video en Tab Todo
+  // Queue secuencial para miniaturas de video en Tab Todo - usando función reutilizable
   let todoLoadIndex = 0;
   const loadNextTodoThumbnail = () => {
     if (todoLoadIndex >= todoThumbnails.length) return;
@@ -1352,78 +1302,9 @@ function openProfile(profileId) {
     
     item.loaded = true;
     
-    const tempVideo = document.createElement('video');
-    tempVideo.preload = 'metadata';
-    tempVideo.src = item.src;
-    tempVideo.muted = true;
-    tempVideo.playsInline = true;
-    tempVideo.crossOrigin = 'anonymous';
-    tempVideo.style.display = 'none';
-    document.body.appendChild(tempVideo);
-    
-    let completed = false;
-    
-    const onComplete = () => {
-      if (completed) return;
-      completed = true;
-      try {
-        tempVideo.pause();
-        tempVideo.src = '';
-        if (tempVideo.parentNode) tempVideo.parentNode.removeChild(tempVideo);
-      } catch (e) {}
+    loadVideoThumbnail(item.src, item.div, () => {
       setTimeout(loadNextTodoThumbnail, 200);
-    };
-    
-    const timeoutHandle = setTimeout(() => {
-      if (!completed) {
-        item.div.style.opacity = '0.6';
-        onComplete();
-      }
-    }, 10000); // 10 segundos timeout solo para timeout real
-    
-    tempVideo.addEventListener('loadedmetadata', () => {
-      clearTimeout(timeoutHandle);
-      let frameCaptured = false;
-      const captureFrame = () => {
-        if (frameCaptured) return;
-        frameCaptured = true;
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = tempVideo.videoWidth || 320;
-          canvas.height = tempVideo.videoHeight || 180;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
-          const dataURL = canvas.toDataURL('image/jpeg', 0.7);
-          item.div.style.backgroundImage = `url(${dataURL})`;
-        } catch (e) {
-          // CORS u otro error canvas: mantener gradiente
-        }
-        onComplete();
-      };
-      
-      if (tempVideo.readyState >= 2) {
-        try {
-          tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
-        } catch (e) {
-          onComplete();
-        }
-      } else {
-        tempVideo.addEventListener('loadeddata', () => {
-          try {
-            tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
-          } catch (e) {
-            onComplete();
-          }
-        }, { once: true });
-      }
-      tempVideo.addEventListener('seeked', captureFrame, { once: true });
-    }, { once: true });
-    
-    tempVideo.addEventListener('error', () => {
-      clearTimeout(timeoutHandle);
-      // No marcar visualmente, solo completar
-      onComplete();
-    }, { once: true });
+    });
   };
   
   // Iniciar queue después de renderizado
@@ -1571,6 +1452,143 @@ function initTheme() {
       moon.classList.add('hidden');
     }
   }
+}
+
+// === Función reutilizable para capturar miniaturas de video ===
+function loadVideoThumbnail(videoSrc, thumbDiv, onComplete, formatDurationFn = null) {
+  const tempVideo = document.createElement('video');
+  tempVideo.preload = 'metadata';
+  tempVideo.src = videoSrc;
+  tempVideo.muted = true;
+  tempVideo.playsInline = true;
+  tempVideo.crossOrigin = 'anonymous';
+  tempVideo.style.display = 'none';
+  document.body.appendChild(tempVideo);
+  
+  let completed = false;
+  
+  const cleanup = () => {
+    if (completed) return;
+    completed = true;
+    try {
+      tempVideo.pause();
+      tempVideo.src = '';
+      if (tempVideo.parentNode) tempVideo.parentNode.removeChild(tempVideo);
+    } catch (e) {}
+    if (onComplete) onComplete();
+  };
+  
+  const timeoutHandle = setTimeout(() => {
+    if (!completed) {
+      cleanup();
+    }
+  }, 10000);
+  
+  // Detecta si un canvas es principalmente negro/oscuro
+  const isCanvasBlack = (canvas, threshold = 30) => {
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    let brightPixels = 0;
+    const sampleSize = Math.min(1000, data.length / 4);
+    for (let i = 0; i < sampleSize; i++) {
+      const idx = Math.floor(Math.random() * (data.length / 4)) * 4;
+      const r = data[idx];
+      const g = data[idx + 1];
+      const b = data[idx + 2];
+      const brightness = (r + g + b) / 3;
+      if (brightness > threshold) brightPixels++;
+    }
+    return brightPixels / sampleSize < 0.3; // < 30% píxeles brillantes = muy oscuro
+  };
+  
+  const captureFrame = (timeOffset) => {
+    if (completed) return false;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = tempVideo.videoWidth || 320;
+      canvas.height = tempVideo.videoHeight || 180;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
+      
+      // Si el canvas es demasiado negro, no guardar (reintentaremos con otro frame)
+      if (isCanvasBlack(canvas)) {
+        return false;
+      }
+      
+      const dataURL = canvas.toDataURL('image/jpeg', 0.7);
+      thumbDiv.style.backgroundImage = `url(${dataURL})`;
+      return true;
+    } catch (e) {
+      // Error al dibujar (CORS, etc.): mantener gradiente
+      return true; // Considerar "éxito" para no reintentar
+    }
+  };
+  
+  // Buscar un frame válido: intenta múltiples timeouts
+  const frameTimesToTry = [0.1, 0.25, 0.5, 1, 2, 3]; // segundos
+  let frameAttempt = 0;
+  
+  const tryNextFrame = () => {
+    if (completed || frameAttempt >= frameTimesToTry.length) {
+      clearTimeout(timeoutHandle);
+      cleanup();
+      return;
+    }
+    
+    const timeToTry = frameTimesToTry[frameAttempt];
+    frameAttempt++;
+    
+    // Buscar frame en secuencia con retraso
+    const seekFrame = () => {
+      if (completed) return;
+      
+      try {
+        tempVideo.currentTime = Math.min(timeToTry, tempVideo.duration * 0.95);
+      } catch (e) {
+        clearTimeout(timeoutHandle);
+        cleanup();
+        return;
+      }
+    };
+    
+    if (tempVideo.readyState >= 2) {
+      seekFrame();
+    } else {
+      tempVideo.addEventListener('loadeddata', seekFrame, { once: true });
+    }
+  };
+  
+  tempVideo.addEventListener('loadedmetadata', () => {
+    if (formatDurationFn && thumbDiv.querySelector('.thumb-number')) {
+      thumbDiv.querySelector('.thumb-number').textContent = formatDurationFn(tempVideo.duration);
+    }
+    
+    const onSeeked = () => {
+      if (completed) {
+        tempVideo.removeEventListener('seeked', onSeeked);
+        return;
+      }
+      
+      if (captureFrame(frameTimesToTry[frameAttempt - 1])) {
+        // Frame válido capturado
+        clearTimeout(timeoutHandle);
+        cleanup();
+      } else {
+        // Frame oscuro, reintentar con siguiente offset
+        tempVideo.removeEventListener('seeked', onSeeked);
+        tryNextFrame();
+      }
+    };
+    
+    tempVideo.addEventListener('seeked', onSeeked, { once: true });
+    tryNextFrame();
+  }, { once: true });
+  
+  tempVideo.addEventListener('error', () => {
+    clearTimeout(timeoutHandle);
+    cleanup();
+  }, { once: true });
 }
 
 // Events
