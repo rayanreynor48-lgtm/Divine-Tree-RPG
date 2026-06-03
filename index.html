@@ -1282,9 +1282,7 @@ function openProfile(profileId) {
     
     tempVideo.addEventListener('error', () => {
       clearTimeout(timeoutHandle);
-      const durationSpan = item.div.querySelector('.thumb-number');
-      if (durationSpan) durationSpan.textContent = 'error';
-      item.div.style.opacity = '0.6';
+      // No marcar visualmente, solo completar. Video fallo pero no es catastrofico
       onComplete();
     }, { once: true });
   };
@@ -1413,7 +1411,7 @@ function openProfile(profileId) {
     
     tempVideo.addEventListener('error', () => {
       clearTimeout(timeoutHandle);
-      item.div.style.opacity = '0.6';
+      // No marcar visualmente, solo completar
       onComplete();
     }, { once: true });
   };
