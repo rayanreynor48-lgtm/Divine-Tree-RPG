@@ -1055,7 +1055,7 @@ function openProfile(profileId) {
     }
     // Imagen especial de Paulina
     if (currentProfile.folder === 'Paulina' && i === 1) {
-      imgSrc = `assets/Paulina/Mi Diosa😍😍😍 20210321_193744.jpg`;
+      imgSrc = `assets/Paulina/${encodeURIComponent('Mi Diosa😍😍😍 20210321_193744.jpg')}`;
     }
     let date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + profileId));
@@ -1208,18 +1208,42 @@ function openProfile(profileId) {
     tempVideo.muted = true;
     tempVideo.playsInline = true;
     tempVideo.crossOrigin = 'anonymous';
+    tempVideo.style.display = 'none';
+    document.body.appendChild(tempVideo);
+    
+    let completed = false;
     
     const onComplete = () => {
-      tempVideo.pause();
-      tempVideo.src = '';
-      setTimeout(loadNextVideoMetadata, 50);
+      if (completed) return;
+      completed = true;
+      try {
+        tempVideo.pause();
+        tempVideo.src = '';
+        if (tempVideo.parentNode) tempVideo.parentNode.removeChild(tempVideo);
+      } catch (e) {}
+      // Mayor delay para videos lentos
+      setTimeout(loadNextVideoMetadata, 200);
     };
     
+    const timeoutHandle = setTimeout(() => {
+      if (!completed) {
+        const durationSpan = item.div.querySelector('.thumb-number');
+        if (durationSpan) durationSpan.textContent = 'timeout';
+        onComplete();
+      }
+    }, 10000); // 10 segundos timeout máximo
+    
     tempVideo.addEventListener('loadedmetadata', () => {
+      clearTimeout(timeoutHandle);
       const durationSpan = item.div.querySelector('.thumb-number');
-      if (durationSpan) durationSpan.textContent = formatDuration(tempVideo.duration);
+      if (durationSpan && durationSpan.textContent !== 'timeout') {
+        durationSpan.textContent = formatDuration(tempVideo.duration);
+      }
       
+      let frameCaptured = false;
       const captureFrame = () => {
+        if (frameCaptured) return;
+        frameCaptured = true;
         try {
           const canvas = document.createElement('canvas');
           canvas.width = tempVideo.videoWidth || 320;
@@ -1228,15 +1252,26 @@ function openProfile(profileId) {
           ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
           const dataURL = canvas.toDataURL('image/jpeg', 0.7);
           item.div.style.backgroundImage = `url(${dataURL})`;
-        } catch (e) {}
+        } catch (e) {
+          // CORS o error canvas: mantener gradiente
+        }
         onComplete();
       };
       
+      // Esperar a readyState >= 2 antes de seekear
       if (tempVideo.readyState >= 2) {
-        tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
+        try {
+          tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
+        } catch (e) {
+          onComplete();
+        }
       } else {
         tempVideo.addEventListener('loadeddata', () => {
-          tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
+          try {
+            tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
+          } catch (e) {
+            onComplete();
+          }
         }, { once: true });
       }
       
@@ -1244,6 +1279,7 @@ function openProfile(profileId) {
     }, { once: true });
     
     tempVideo.addEventListener('error', () => {
+      clearTimeout(timeoutHandle);
       const durationSpan = item.div.querySelector('.thumb-number');
       if (durationSpan) durationSpan.textContent = 'error';
       item.div.style.opacity = '0.6';
@@ -1312,38 +1348,67 @@ function openProfile(profileId) {
     tempVideo.muted = true;
     tempVideo.playsInline = true;
     tempVideo.crossOrigin = 'anonymous';
+    tempVideo.style.display = 'none';
+    document.body.appendChild(tempVideo);
+    
+    let completed = false;
     
     const onComplete = () => {
-      tempVideo.pause();
-      tempVideo.src = '';
-      setTimeout(loadNextTodoThumbnail, 50);
+      if (completed) return;
+      completed = true;
+      try {
+        tempVideo.pause();
+        tempVideo.src = '';
+        if (tempVideo.parentNode) tempVideo.parentNode.removeChild(tempVideo);
+      } catch (e) {}
+      setTimeout(loadNextTodoThumbnail, 200);
     };
     
-    const captureFrame = () => {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = tempVideo.videoWidth || 320;
-        canvas.height = tempVideo.videoHeight || 180;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
-        const dataURL = canvas.toDataURL('image/jpeg', 0.7);
-        item.div.style.backgroundImage = `url(${dataURL})`;
-      } catch (e) {}
-      onComplete();
-    };
+    const timeoutHandle = setTimeout(() => {
+      if (!completed) {
+        item.div.style.opacity = '0.6';
+        onComplete();
+      }
+    }, 10000); // 10 segundos timeout
     
     tempVideo.addEventListener('loadedmetadata', () => {
+      clearTimeout(timeoutHandle);
+      let frameCaptured = false;
+      const captureFrame = () => {
+        if (frameCaptured) return;
+        frameCaptured = true;
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = tempVideo.videoWidth || 320;
+          canvas.height = tempVideo.videoHeight || 180;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
+          const dataURL = canvas.toDataURL('image/jpeg', 0.7);
+          item.div.style.backgroundImage = `url(${dataURL})`;
+        } catch (e) {}
+        onComplete();
+      };
+      
       if (tempVideo.readyState >= 2) {
-        tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
+        try {
+          tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
+        } catch (e) {
+          onComplete();
+        }
       } else {
         tempVideo.addEventListener('loadeddata', () => {
-          tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
+          try {
+            tempVideo.currentTime = Math.min(1, tempVideo.duration / 4);
+          } catch (e) {
+            onComplete();
+          }
         }, { once: true });
       }
       tempVideo.addEventListener('seeked', captureFrame, { once: true });
     }, { once: true });
     
     tempVideo.addEventListener('error', () => {
+      clearTimeout(timeoutHandle);
       item.div.style.opacity = '0.6';
       onComplete();
     }, { once: true });
