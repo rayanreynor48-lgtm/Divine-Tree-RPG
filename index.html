@@ -1066,6 +1066,8 @@ function openProfile(profileId) {
       date = new Date(2021, 3, 1, 0, 0, 2); // IMG-20210316-WA0022.jpg
     } else if (currentProfile.folder === 'Dulce' && i === 3) {
       date = new Date(2021, 3, 1, 0, 0, 3); // IMG-20210314-WA0002.jpg - arriba de las otras dos
+    } else if (currentProfile.folder === 'Paulina' && i === 1) {
+      date = new Date(2021, 2, 30, 0, 0, 0); // 30/3/2021 para imagen Paulina
     } else if (i === 1) {
       date = new Date(2021, 3, 1); // 1/4/2021 para otros perfiles
     }
@@ -1253,7 +1255,7 @@ function openProfile(profileId) {
           const dataURL = canvas.toDataURL('image/jpeg', 0.7);
           item.div.style.backgroundImage = `url(${dataURL})`;
         } catch (e) {
-          // CORS o error canvas: mantener gradiente
+          // CORS u otro error canvas: mantener gradiente, no marcar error
         }
         onComplete();
       };
@@ -1369,7 +1371,7 @@ function openProfile(profileId) {
         item.div.style.opacity = '0.6';
         onComplete();
       }
-    }, 10000); // 10 segundos timeout
+    }, 10000); // 10 segundos timeout solo para timeout real
     
     tempVideo.addEventListener('loadedmetadata', () => {
       clearTimeout(timeoutHandle);
@@ -1385,7 +1387,9 @@ function openProfile(profileId) {
           ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
           const dataURL = canvas.toDataURL('image/jpeg', 0.7);
           item.div.style.backgroundImage = `url(${dataURL})`;
-        } catch (e) {}
+        } catch (e) {
+          // CORS u otro error canvas: mantener gradiente
+        }
         onComplete();
       };
       
