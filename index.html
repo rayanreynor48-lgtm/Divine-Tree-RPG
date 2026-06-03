@@ -1073,11 +1073,11 @@ function openProfile(profileId) {
     } else if (currentProfile.folder === 'Dulce' && i === 3) {
       date = new Date(2021, 3, 1, 0, 0, 3); // IMG-20210314-WA0002.jpg - arriba de las otras dos
     } else if (currentProfile.folder === 'Paulina' && i === 1) {
-      date = new Date(2021, 2, 30, 0, 0, 1); // Mi Diosa😍😍😍 - 30/3/2021 milisegundo 1 (arriba)
+      date = new Date(2021, 2, 30, 0, 0, 1); // Mi Diosa😍😍😍 - 30/3/2021 (original)
     } else if (currentProfile.folder === 'Paulina' && i === 2) {
-      date = new Date(2021, 2, 30, 0, 0, 2); // IMG-20210321-WA0353.jpg - 30/3/2021 milisegundo 2 (abajo)
+      date = new Date(2021, 2, 30, 0, 0, 2); // IMG-20210321-WA0353.jpg - 30/3/2021 (original)
     } else if (currentProfile.folder === 'Paulina' && i === 3) {
-      date = new Date(2021, 2, 30, 0, 0, 3); // IMG-20201001-WA0033.jpg - 30/3/2021 milisegundo 3 (medio)
+      date = new Date(2021, 2, 30, 0, 0, 3); // IMG-20201001-WA0033.jpg - 30/3/2021 (original)
     } else {
       date = new Date(2021, 3, 1); // 1/4/2021 para otros perfiles
     }
@@ -1157,7 +1157,7 @@ function openProfile(profileId) {
     date.setDate(today.getDate() - (i * 2 + profileId - 1));
     // Fechas especiales para Paulina - invertir orden como en Dulce
     if (currentProfile.folder === 'Paulina' && i === 1) {
-      date.setTime(new Date(2021, 2, 30, 0, 0, 1).getTime()); // 3/3/2026
+      date.setTime(new Date(2026, 2, 3, 0, 0, 1).getTime()); // 3/3/2026 (corregido)
     } else if (currentProfile.folder === 'Paulina' && i === 2) {
       date.setTime(new Date(2026, 2, 3, 0, 0, 2).getTime()); // 3/3/2026
     } else if (currentProfile.folder === 'Paulina' && i === 3) {
@@ -1438,6 +1438,8 @@ function openProfile(profileId) {
 }
 
 function closeModal() {
+  // Detener cualquier video activo antes de cerrar
+  stopActiveMedia();
   modal.classList.remove('active');
   modal.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
@@ -1516,7 +1518,22 @@ function openVideoLightbox(src) {
   }, 50);
 }
 
+function stopActiveMedia() {
+  // Pause and unload any active videos inside lightbox or modal
+  try {
+    document.querySelectorAll('#lightbox video, #profile-modal video').forEach(v => {
+      try {
+        v.pause();
+        v.removeAttribute('src');
+        v.load();
+        if (v.parentNode) v.parentNode.removeChild(v);
+      } catch (e) {}
+    });
+  } catch (e) {}
+}
+
 function closeLightbox() {
+  stopActiveMedia();
   lightbox.classList.remove('active');
   lightbox.setAttribute('aria-hidden', 'true');
   if (!modal.classList.contains('active')) {
