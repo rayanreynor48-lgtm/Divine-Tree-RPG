@@ -1079,7 +1079,7 @@ function openProfile(profileId) {
       imgSrc = `assets/Paulina/IMG-20201001-WA0022.jpg`;
     }
     if (currentProfile.folder === 'Paulina' && i === 9) {
-      imgSrc = `assets/Paulina/FB_IMG-1612563811423591.jpg`;
+      imgSrc = `assets/Paulina/FB_IMG_16125263811423591.jpg`;
     }
     let date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + profileId));
@@ -1107,7 +1107,7 @@ function openProfile(profileId) {
     } else if (currentProfile.folder === 'Paulina' && i === 8) {
       date = new Date(2021, 2, 30, 0, 0, 8); // IMG-20201001-WA0022.jpg - 30/3/2021 (original)
     } else if (currentProfile.folder === 'Paulina' && i === 9) {
-      date = new Date(2021, 2, 30, 0, 0, 9); // FB_IMG-1612563811423591.jpg - 30/3/2021 (original)
+      date = new Date(2021, 2, 30, 0, 0, 9); // FB_IMG_16125263811423591.jpg - 30/3/2021 (original)
     }
     allItems.push({ type: 'image', index: i, src: imgSrc, date });
 
