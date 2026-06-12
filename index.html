@@ -1000,27 +1000,85 @@ const modal = document.getElementById('profile-modal');
 const lightbox = document.getElementById('lightbox');
 const lightboxBody = document.getElementById('lightbox-body');
 let currentProfile = null;
+let profileRenderToken = 0;
+let activeThumbnailCleanups = [];
+
+function cancelThumbnailJobs() {
+  profileRenderToken++;
+  activeThumbnailCleanups.forEach(cleanup => cleanup());
+  activeThumbnailCleanups = [];
+}
+
+function setThumbImage(el, src) {
+  el.style.backgroundImage = `url("${String(src).replace(/"/g, '\\"')}")`;
+}
+
+function createPlayIcon() {
+  const icon = document.createElement('div');
+  icon.className = 'play-icon';
+  icon.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"/></svg>';
+  return icon;
+}
+
+function createThumbNumber(text) {
+  const number = document.createElement('span');
+  number.className = 'thumb-number';
+  number.textContent = text;
+  return number;
+}
+
+function createVideoThumb(label) {
+  const div = document.createElement('div');
+  div.className = 'thumb';
+  div.appendChild(createPlayIcon());
+  div.appendChild(createThumbNumber(label));
+  return div;
+}
 
 // Render profiles
 function renderProfiles() {
-  grid.innerHTML = profiles.map(p => `
-    <article class="profile-card">
-      <div class="card-avatar" style="background:${p.gradient}">
-        <span class="avatar-initial">${p.initial}</span>
-      </div>
-      <div class="card-body">
-        <h3 class="card-name">${p.name}</h3>
-        <button class="btn-view" data-id="${p.id}">Ver perfil</button>
-      </div>
-    </article>
-  `).join('');
-  
-  document.querySelectorAll('.btn-view').forEach(btn => {
-    btn.addEventListener('click', () => openProfile(Number(btn.dataset.id)));
+  grid.textContent = '';
+  const fragment = document.createDocumentFragment();
+
+  profiles.forEach(p => {
+    const article = document.createElement('article');
+    article.className = 'profile-card';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'card-avatar';
+    avatar.style.background = p.gradient;
+
+    const initial = document.createElement('span');
+    initial.className = 'avatar-initial';
+    initial.textContent = p.initial;
+    avatar.appendChild(initial);
+
+    const body = document.createElement('div');
+    body.className = 'card-body';
+
+    const name = document.createElement('h3');
+    name.className = 'card-name';
+    name.textContent = p.name;
+
+    const button = document.createElement('button');
+    button.className = 'btn-view';
+    button.type = 'button';
+    button.textContent = 'Ver perfil';
+    button.addEventListener('click', () => openProfile(p.id));
+
+    body.appendChild(name);
+    body.appendChild(button);
+    article.appendChild(avatar);
+    article.appendChild(body);
+    fragment.appendChild(article);
   });
+
+  grid.appendChild(fragment);
 }
 
 function openProfile(profileId) {
+  cancelThumbnailJobs();
+  const renderToken = profileRenderToken;
   currentProfile = profiles.find(p => p.id === profileId);
   if (!currentProfile) return;
   
@@ -1129,10 +1187,9 @@ function openProfile(profileId) {
     const div = document.createElement('div');
     div.className = 'thumb';
     div.style.background = currentProfile.gradient;
-    div.style.backgroundImage = `url(${imgSrc})`;
+    setThumbImage(div, imgSrc);
     div.style.backgroundSize = 'cover';
     div.style.backgroundPosition = 'center';
-    div.innerHTML = ``;
     div.addEventListener('click', () => openImageLightbox(imgSrc, i), { passive: true });
     
     imagesData.push({ div, date });
@@ -1229,22 +1286,24 @@ function openProfile(profileId) {
     }
     allItems.push({ type: 'video', index: i, src: videoSrc, date });
 
-    const div = document.createElement('div');
-    div.className = 'thumb';
+    const div = createVideoThumb('--:--');
     div.style.background = currentProfile.gradient;
     div.style.backgroundSize = 'cover';
     div.style.backgroundPosition = 'center';
-    div.innerHTML = `<div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"/></svg></div><span class="thumb-number">--:--</span>`;
     div.addEventListener('click', () => openVideoLightbox(videoSrc), { passive: true });
-    vidFragment.appendChild(div);
     
     // Guardar metadatos para carga sincronizada
-    videosMetadata.push({ div, src: videoSrc, loaded: false });
+    videosMetadata.push({ div, src: videoSrc, date, loaded: false });
   }
+
+  videosMetadata.sort((a, b) => b.date - a.date);
+  videosMetadata.forEach(item => vidFragment.appendChild(item.div));
+  videosGrid.appendChild(vidFragment);
   
   // Queue secuencial para cargar miniaturas usando función reutilizable
   let videoLoadIndex = 0;
   const loadNextVideoMetadata = () => {
+    if (renderToken !== profileRenderToken) return;
     if (videoLoadIndex >= videosMetadata.length) return;
     
     const item = videosMetadata[videoLoadIndex];
@@ -1257,19 +1316,18 @@ function openProfile(profileId) {
     
     item.loaded = true;
     
-    loadVideoThumbnail(item.src, item.div, () => {
-      setTimeout(loadNextVideoMetadata, 200);
+    const cleanup = loadVideoThumbnail(item.src, item.div, () => {
+      if (renderToken === profileRenderToken) {
+        setTimeout(loadNextVideoMetadata, 200);
+      }
     }, formatDuration);
+    activeThumbnailCleanups.push(cleanup);
   };
   
   // Iniciar queue después de renderizado
-  setTimeout(loadNextVideoMetadata, 100);
-  
-  // Reordenar videos: pasar de 1-12 a 12-1 (más reciente al inicio)
-  const videoChildNodes = Array.from(vidFragment.childNodes);
-  videosGrid.appendChild(document.createDocumentFragment());
-  videosGrid.innerHTML = '';
-  videoChildNodes.reverse().forEach(node => videosGrid.appendChild(node));
+  setTimeout(() => {
+    if (renderToken === profileRenderToken) loadNextVideoMetadata();
+  }, 100);
 
   // Todo - ordenado por fecha
   const todoGrid = document.getElementById('todo-grid');
@@ -1283,16 +1341,17 @@ function openProfile(profileId) {
     div.className = 'thumb';
     if (item.type === 'image') {
       div.style.background = currentProfile.gradient;
-      div.style.backgroundImage = `url(${item.src})`;
+      setThumbImage(div, item.src);
       div.style.backgroundSize = 'cover';
       div.style.backgroundPosition = 'center';
-      div.innerHTML = `<span class="thumb-number">${formatDate(item.date)}</span>`;
+      div.appendChild(createThumbNumber(formatDate(item.date)));
       div.addEventListener('click', () => openImageLightbox(item.src, item.index), { passive: true });
     } else {
+      div.appendChild(createPlayIcon());
+      div.appendChild(createThumbNumber(formatDate(item.date)));
       div.style.background = currentProfile.gradient;
       div.style.backgroundSize = 'cover';
       div.style.backgroundPosition = 'center';
-      div.innerHTML = `<div class="play-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v14l11-7-11-7z"/></svg></div><span class="thumb-number">${formatDate(item.date)}</span>`;
       div.addEventListener('click', () => openVideoLightbox(item.src), { passive: true });
       
       // Guardar para cargar en queue
@@ -1305,6 +1364,7 @@ function openProfile(profileId) {
   // Queue secuencial para miniaturas de video en Tab Todo - usando función reutilizable
   let todoLoadIndex = 0;
   const loadNextTodoThumbnail = () => {
+    if (renderToken !== profileRenderToken) return;
     if (todoLoadIndex >= todoThumbnails.length) return;
     
     const item = todoThumbnails[todoLoadIndex];
@@ -1317,14 +1377,19 @@ function openProfile(profileId) {
     
     item.loaded = true;
     
-    loadVideoThumbnail(item.src, item.div, () => {
-      setTimeout(loadNextTodoThumbnail, 200);
+    const cleanup = loadVideoThumbnail(item.src, item.div, () => {
+      if (renderToken === profileRenderToken) {
+        setTimeout(loadNextTodoThumbnail, 200);
+      }
     });
+    activeThumbnailCleanups.push(cleanup);
   };
   
   // Iniciar queue después de renderizado
   if (todoThumbnails.length > 0) {
-    setTimeout(loadNextTodoThumbnail, 100);
+    setTimeout(() => {
+      if (renderToken === profileRenderToken) loadNextTodoThumbnail();
+    }, 100);
   }
 
   modal.classList.add('active');
@@ -1334,6 +1399,7 @@ function openProfile(profileId) {
 }
 
 function closeModal() {
+  cancelThumbnailJobs();
   // Detener cualquier video activo antes de cerrar
   stopActiveMedia();
   modal.classList.remove('active');
@@ -1347,71 +1413,101 @@ function switchTab(tab) {
 }
 
 function openImageLightbox(src, index) {
-  lightboxBody.innerHTML = `
-    <div style="display:flex;flex-direction:column;align-items:center;width:100%">
-      <div class="lightbox-image" id="fs-image" style="background-image:url(${src}); background-size:contain; background-repeat:no-repeat; background-position:center; background-color:#000">
-      </div>
-      <button class="fullscreen-btn" id="fullscreen-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-        Pantalla completa
-      </button>
-    </div>
-  `;
+  lightboxBody.textContent = '';
+
+  const wrapper = document.createElement('div');
+  wrapper.style.display = 'flex';
+  wrapper.style.flexDirection = 'column';
+  wrapper.style.alignItems = 'center';
+  wrapper.style.width = '100%';
+
+  const img = document.createElement('div');
+  img.className = 'lightbox-image';
+  img.id = 'fs-image';
+  setThumbImage(img, src);
+  img.style.backgroundSize = 'contain';
+  img.style.backgroundRepeat = 'no-repeat';
+  img.style.backgroundPosition = 'center';
+  img.style.backgroundColor = '#000';
+
+  const btn = document.createElement('button');
+  btn.className = 'fullscreen-btn';
+  btn.id = 'fullscreen-btn';
+  btn.type = 'button';
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+  btn.appendChild(document.createTextNode('Pantalla completa'));
+
+  wrapper.appendChild(img);
+  wrapper.appendChild(btn);
+  lightboxBody.appendChild(wrapper);
   lightbox.classList.add('active');
   lightbox.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
   
   // Botón pantalla completa
-  setTimeout(() => {
-    const btn = document.getElementById('fullscreen-btn');
-    const img = document.getElementById('fs-image');
-    if (btn && img) {
-      btn.addEventListener('click', () => {
-        if (img.requestFullscreen) {
-          img.requestFullscreen();
-        } else if (img.webkitRequestFullscreen) {
-          img.webkitRequestFullscreen();
-        } else if (img.msRequestFullscreen) {
-          img.msRequestFullscreen();
-        }
-      }, { passive: true });
+  btn.addEventListener('click', () => {
+    if (img.requestFullscreen) {
+      img.requestFullscreen();
+    } else if (img.webkitRequestFullscreen) {
+      img.webkitRequestFullscreen();
+    } else if (img.msRequestFullscreen) {
+      img.msRequestFullscreen();
     }
-  }, 50);
+  }, { passive: true });
 }
 
 function openVideoLightbox(src) {
-  lightboxBody.innerHTML = `
-    <div style="display:flex;flex-direction:column;align-items:center;width:100%">
-      <div class="video-player" id="fs-video" style="width:100%;max-width:900px">
-        <video src="${src}" controls autoplay playsinline preload="metadata" style="width:100%; height:auto; max-height:70vh; background:#000; border-radius:12px"></video>
-      </div>
-      <button class="fullscreen-btn" id="fullscreen-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-        Pantalla completa
-      </button>
-    </div>
-  `;
+  lightboxBody.textContent = '';
+
+  const wrapper = document.createElement('div');
+  wrapper.style.display = 'flex';
+  wrapper.style.flexDirection = 'column';
+  wrapper.style.alignItems = 'center';
+  wrapper.style.width = '100%';
+
+  const videoContainer = document.createElement('div');
+  videoContainer.className = 'video-player';
+  videoContainer.id = 'fs-video';
+  videoContainer.style.width = '100%';
+  videoContainer.style.maxWidth = '900px';
+
+  const video = document.createElement('video');
+  video.src = src;
+  video.controls = true;
+  video.autoplay = true;
+  video.playsInline = true;
+  video.preload = 'metadata';
+  video.style.width = '100%';
+  video.style.height = 'auto';
+  video.style.maxHeight = '70vh';
+  video.style.background = '#000';
+  video.style.borderRadius = '12px';
+
+  const btn = document.createElement('button');
+  btn.className = 'fullscreen-btn';
+  btn.id = 'fullscreen-btn';
+  btn.type = 'button';
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+  btn.appendChild(document.createTextNode('Pantalla completa'));
+
+  videoContainer.appendChild(video);
+  wrapper.appendChild(videoContainer);
+  wrapper.appendChild(btn);
+  lightboxBody.appendChild(wrapper);
   lightbox.classList.add('active');
   lightbox.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
   
   // Botón pantalla completa
-  setTimeout(() => {
-    const btn = document.getElementById('fullscreen-btn');
-    const videoContainer = document.getElementById('fs-video');
-    const video = videoContainer ? videoContainer.querySelector('video') : null;
-    if (btn && video) {
-      btn.addEventListener('click', () => {
-        if (video.requestFullscreen) {
-          video.requestFullscreen();
-        } else if (video.webkitRequestFullscreen) {
-          video.webkitRequestFullscreen();
-        } else if (video.msRequestFullscreen) {
-          video.msRequestFullscreen();
-        }
-      }, { passive: true });
+  btn.addEventListener('click', () => {
+    if (video.requestFullscreen) {
+      video.requestFullscreen();
+    } else if (video.webkitRequestFullscreen) {
+      video.webkitRequestFullscreen();
+    } else if (video.msRequestFullscreen) {
+      video.msRequestFullscreen();
     }
-  }, 50);
+  }, { passive: true });
 }
 
 function stopActiveMedia() {
@@ -1482,24 +1578,43 @@ function loadVideoThumbnail(videoSrc, thumbDiv, onComplete, formatDurationFn = n
   
   let completed = false;
   
-  const cleanup = () => {
+  const cleanup = (notify = true) => {
     if (completed) return;
     completed = true;
+    clearTimeout(timeoutHandle);
     try {
       tempVideo.pause();
       tempVideo.src = '';
       if (tempVideo.parentNode) tempVideo.parentNode.removeChild(tempVideo);
     } catch (e) {}
-    if (onComplete) onComplete();
+    if (notify && onComplete) onComplete();
   };
   
   const timeoutHandle = setTimeout(() => {
     if (!completed) {
       cleanup();
     }
-  }, 3000);
+  }, 10000);
   
-  const captureFrame = () => {
+  // Detecta si un canvas es principalmente negro/oscuro
+  const isCanvasBlack = (canvas, threshold = 30) => {
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    let brightPixels = 0;
+    const sampleSize = Math.min(1000, data.length / 4);
+    for (let i = 0; i < sampleSize; i++) {
+      const idx = Math.floor(Math.random() * (data.length / 4)) * 4;
+      const r = data[idx];
+      const g = data[idx + 1];
+      const b = data[idx + 2];
+      const brightness = (r + g + b) / 3;
+      if (brightness > threshold) brightPixels++;
+    }
+    return brightPixels / sampleSize < 0.3; // < 30% píxeles brillantes = muy oscuro
+  };
+  
+  const captureFrame = (timeOffset) => {
     if (completed) return false;
     try {
       const canvas = document.createElement('canvas');
@@ -1507,39 +1622,78 @@ function loadVideoThumbnail(videoSrc, thumbDiv, onComplete, formatDurationFn = n
       canvas.height = tempVideo.videoHeight || 180;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
+      
+      // Si el canvas es demasiado negro, no guardar (reintentaremos con otro frame)
+      if (isCanvasBlack(canvas)) {
+        return false;
+      }
+      
       const dataURL = canvas.toDataURL('image/jpeg', 0.7);
       thumbDiv.style.backgroundImage = `url(${dataURL})`;
       return true;
     } catch (e) {
-      return false;
+      // Error al dibujar (CORS, etc.): mantener gradiente
+      return true; // Considerar "éxito" para no reintentar
     }
   };
   
-  tempVideo.addEventListener('loadedmetadata', () => {
-    if (formatDurationFn && thumbDiv.querySelector('.thumb-number')) {
-      thumbDiv.querySelector('.thumb-number').textContent = formatDurationFn(tempVideo.duration);
+  // Buscar un frame válido: intenta múltiples timeouts
+  const frameTimesToTry = [0.1, 0.25, 0.5, 1, 2, 3]; // segundos
+  let frameAttempt = 0;
+  
+  const tryNextFrame = () => {
+    if (completed || frameAttempt >= frameTimesToTry.length) {
+      cleanup();
+      return;
     }
     
-    try {
-      tempVideo.currentTime = Math.min(0.5, tempVideo.duration * 0.4);
-    } catch (e) {
-      clearTimeout(timeoutHandle);
-      cleanup();
+    const timeToTry = frameTimesToTry[frameAttempt];
+    frameAttempt++;
+    
+    // Buscar frame en secuencia con retraso
+    const seekFrame = () => {
+      if (completed) return;
+      
+      try {
+        tempVideo.addEventListener('seeked', onSeeked, { once: true });
+        tempVideo.currentTime = Math.min(timeToTry, tempVideo.duration * 0.95);
+      } catch (e) {
+        cleanup();
+        return;
+      }
+    };
+    
+    if (tempVideo.readyState >= 2) {
+      seekFrame();
+    } else {
+      tempVideo.addEventListener('loadeddata', seekFrame, { once: true });
     }
-  }, { once: true });
+  };
   
-  tempVideo.addEventListener('seeked', () => {
-    if (!completed) {
-      captureFrame();
-      clearTimeout(timeoutHandle);
+  const onSeeked = () => {
+    if (completed) return;
+    
+    if (captureFrame(frameTimesToTry[frameAttempt - 1])) {
       cleanup();
+    } else {
+      tryNextFrame();
     }
+  };
+
+  tempVideo.addEventListener('loadedmetadata', () => {
+    const label = thumbDiv.querySelector('.thumb-number');
+    if (formatDurationFn && label) {
+      label.textContent = formatDurationFn(tempVideo.duration);
+    }
+
+    tryNextFrame();
   }, { once: true });
   
   tempVideo.addEventListener('error', () => {
-    clearTimeout(timeoutHandle);
     cleanup();
   }, { once: true });
+
+  return () => cleanup(false);
 }
 
 // Events
