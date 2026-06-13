@@ -1148,6 +1148,18 @@ function openProfile(profileId) {
     if (currentProfile.folder === 'Paulina' && i === 12) {
       imgSrc = `assets/Paulina/5212331257816_status_e24ad553a90745319c99e22892fb281d.jpg`;
     }
+    if (currentProfile.folder === 'Paulina' && i === 13) {
+        imgSrc = `assets/Paulina/5212331257816_status_c445937c9ba140bf8f450ad1b1531109.jpg`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 14) {
+        imgSrc = `assets/Paulina/5212331257816_status_bfa46048dbeb4745b70cf6ab17810eb6.jpg`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 15) {
+        imgSrc = `assets/Paulina/5212331257816_status_33901d10578744588d2a44201dae2613.jpg`;
+    }
+    if (currentProfile.folder === 'Paulina' && i === 16) {
+        imgSrc = `assets/Paulina/5212331257816_status_7919db875bc24862a26d53a123b3bbdc.jpg`;
+    }
     let date = new Date(today);
     date.setDate(today.getDate() - (i * 2 + profileId));
     // Fechas especiales para Dulce - las tres 1/4/2021 pero con orden específico
@@ -1181,6 +1193,14 @@ function openProfile(profileId) {
       date = new Date(2021, 2, 30, 0, 0, 11); // 5212331257816_status_f31cd552f23c4fbf9a6b085ffc4fee9c.jpg - 30/3/2021 (original)
     } else if (currentProfile.folder === 'Paulina' && i === 12) {
       date = new Date(2021, 2, 30, 0, 0, 12); // 5212331257816_status_e24ad553a90745319c99e22892fb281d.jpg - 30/3/2021 (original)
+    } else if (currentProfile.folder === 'Paulina' && i === 13) {
+        date = new Date(2021, 2, 30, 0, 0, 13); // 5212331257816_status_c445937c9ba140bf8f450ad1b1531109.jpg - 30/3/2021 (original)
+    } else if (currentProfile.folder === 'Paulina' && i === 14) {
+        date = new Date(2021, 2, 30, 0, 0, 14); // 5212331257816_status_bfa46048dbeb4745b70cf6ab17810eb6.jpg - 30/3/2021 (original)
+    } else if (currentProfile.folder === 'Paulina' && i === 15) {
+        date = new Date(2021, 2, 30, 0, 0, 15); // 5212331257816_status_33901d10578744588d2a44201dae2613.jpg - 30/3/2021 (original)
+    } else if (currentProfile.folder === 'Paulina' && i === 16) {
+        date = new Date(2021, 2, 30, 0, 0, 16); // 5212331257816_status_7919db875bc24862a26d53a123b3bbdc.jpg - 30/3/2021 (original)
     }
     allItems.push({ type: 'image', index: i, src: imgSrc, date });
 
